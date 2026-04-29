@@ -3,404 +3,460 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vehical — Your car, covered</title>
+<title>Vehical — Your car. Covered.</title>
 <style>
-  :root {
-    --bg: #080c14;
-    --surface: #101720;
-    --surface2: #192231;
-    --border: #253040;
-    --text: #e2e8f0;
-    --text2: #7e93b0;
-    --accent: #3b82f6;
-    --accent2: #6366f1;
-    --green: #22c55e;
-    --amber: #f59e0b;
-    --red: #ef4444;
-    --radius: 14px;
-    --radius-sm: 10px;
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f8f9fc;--surface:#fff;--surface2:#f1f3f8;--border:#e2e6ed;
+    --text:#141b2d;--text2:#5e6f8d;--text3:#8899b5;
+    --accent:#3069f0;--accent2:#2350c4;--accent-light:#eef4ff;
+    --green:#0f973d;--amber:#b58a0b;--red:#d32f2f;
+    --radius:12px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
+  html{font-size:16px}
+  body{
+    font-family:var(--font);background:var(--bg);color:var(--text);
+    line-height:1.5;min-height:100vh;
   }
+  a{color:var(--accent);text-decoration:none}
+  img{max-width:100%}
+  .container{max-width:1080px;margin:0 auto;padding:0 20px}
 
   /* ─── Nav ─── */
-  .nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px; max-width: 1100px; margin: 0 auto;
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px;max-width:1120px;margin:0 auto;
   }
-  .nav h1 { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
-  .nav h1 span {
-    background: linear-gradient(135deg, var(--accent), #8b5cf6);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    font-weight: 800;
+  nav .logo{font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:8px}
+  nav .logo .icon{
+    width:32px;height:32px;border-radius:8px;
+    background:linear-gradient(135deg,var(--accent),#8b5cf6);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;
   }
-  .nav-links { display: flex; gap: 20px; font-size: 0.85rem; }
-  .nav-links a { color: var(--text2); text-decoration: none; }
-  .nav-links a:hover { color: var(--text); }
-  .nav .cta-btn {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: white; padding: 8px 18px; border-radius: 20px;
-    font-size: 0.82rem; font-weight: 600; text-decoration: none;
+  nav .links{display:flex;gap:24px;font-size:0.88rem;font-weight:500}
+  nav .links a{color:var(--text2);transition:color .2s}
+  nav .links a:hover{color:var(--text)}
+  nav .btn{
+    background:var(--accent);color:#fff;padding:8px 20px;
+    border-radius:8px;font-size:0.85rem;font-weight:600;border:none;cursor:pointer
   }
+  @media(max-width:640px){nav .links{display:none}}
 
   /* ─── Hero ─── */
-  .hero {
-    text-align: center; padding: 60px 20px 40px;
-    max-width: 700px; margin: 0 auto;
+  .hero{
+    text-align:center;padding:60px 20px 50px;
+    background:linear-gradient(180deg,#fff,var(--bg));
   }
-  .hero h1 {
-    font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 800;
-    background: linear-gradient(135deg, var(--text), var(--accent));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    line-height: 1.15;
+  .hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.15}
+  .hero h1 span{background:linear-gradient(135deg,var(--accent),#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p{color:var(--text2);font-size:1.1rem;margin:12px auto 28px;max-width:500px}
+  .hero .search-box{
+    display:flex;max-width:460px;margin:0 auto;
+    background:var(--surface);border:2px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
   }
-  .hero p { color: var(--text2); font-size: 1.1rem; margin-top: 12px; max-width: 500px; margin-inline: auto; }
-  .hero .search-demo {
-    margin-top: 24px; display: flex; max-width: 440px; margin-inline: auto;
-    background: var(--surface); border: 2px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
+  .hero .search-box input{
+    flex:1;border:none;padding:16px 18px;font-size:1.1rem;
+    font-family:'Courier New',monospace;letter-spacing:2px;
+    text-transform:uppercase;outline:none;background:none;color:var(--text);
   }
-  .hero .search-demo input {
-    flex: 1; background: none; border: none; padding: 14px 18px;
-    font-size: 1.1rem; font-family: 'Courier New', monospace;
-    color: var(--text); letter-spacing: 2px; text-transform: uppercase;
-    outline: none;
+  .hero .search-box input::placeholder{color:var(--text3);letter-spacing:0;font-family:var(--font);text-transform:none}
+  .hero .search-box button{
+    background:var(--accent);color:#fff;border:none;
+    padding:16px 28px;font-weight:600;font-size:0.95rem;cursor:pointer;
   }
-  .hero .search-demo button {
-    background: var(--accent); border: none; color: white;
-    padding: 14px 24px; font-weight: 600; cursor: pointer;
+  .hero .search-box button:hover{background:var(--accent2)}
+  .hero .trust-row{
+    display:flex;justify-content:center;gap:24px;margin-top:20px;
+    font-size:0.85rem;color:var(--text3);flex-wrap:wrap;
   }
+  .hero .trust-row span{display:flex;align-items:center;gap:6px}
 
-  /* ─── Cards ─── */
-  .section { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
-  .section-title { text-align: center; font-size: 1.6rem; font-weight: 700; margin-bottom: 30px; }
-  .section-title span { color: var(--accent); }
-  .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-  .service-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 28px;
-    transition: border-color 0.2s;
+  /* ─── How It Works ─── */
+  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:50px 0}
+  .how-step{text-align:center;padding:20px}
+  .how-step .num{
+    width:40px;height:40px;border-radius:50%;background:var(--accent-light);
+    color:var(--accent);display:flex;align-items:center;justify-content:center;
+    margin:0 auto 12px;font-weight:700;font-size:1.1rem;
   }
-  .service-card:hover { border-color: var(--accent); }
-  .service-card .icon { font-size: 2rem; margin-bottom: 12px; }
-  .service-card h3 { font-size: 1.15rem; margin-bottom: 6px; }
-  .service-card p { color: var(--text2); font-size: 0.9rem; margin-bottom: 12px; }
-  .service-card .bullets { list-style: none; }
-  .service-card .bullets li {
-    padding: 4px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
-  }
-  .service-card .bullets li::before { content: '✓'; color: var(--green); font-weight: 700; }
+  .how-step h3{font-size:1rem;margin-bottom:4px}
+  .how-step p{color:var(--text2);font-size:0.88rem}
+  @media(max-width:640px){.how{grid-template-columns:1fr;gap:8px}}
 
-  /* ─── Demo Quick View ─── */
-  .demo-row {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px; margin-top: 30px;
+  /* ─── Features Grid ─── */
+  .section-title{font-size:1.5rem;font-weight:700;text-align:center;margin:50px 0 24px}
+  .section-title span{color:var(--accent)}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .feature{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);
   }
-  .demo-panel {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 18px;
+  .feature .icon{font-size:1.6rem;margin-bottom:10px}
+  .feature h3{font-size:1rem;margin-bottom:4px}
+  .feature p{color:var(--text2);font-size:0.88rem;line-height:1.55}
+  .feature ul{list-style:none;margin-top:10px}
+  .feature ul li{font-size:0.85rem;padding:3px 0;display:flex;align-items:center;gap:6px;color:var(--text2)}
+  .feature ul li::before{content:'✓';color:var(--green);font-weight:700}
+  @media(max-width:768px){.features{grid-template-columns:1fr}}
+
+  /* ─── Live Demo ─── */
+  .demo-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0;
   }
-  .demo-panel .title { font-size: 0.82rem; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .demo-panel .big { font-size: 1.8rem; font-weight: 800; }
-  .demo-panel .big.score { color: var(--green); }
-  .demo-panel .row { display: flex; gap: 12px; margin-top: 8px; }
-  .demo-panel .stat { flex: 1; }
-  .demo-panel .stat .l { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; }
-  .demo-panel .stat .v { font-size: 0.95rem; font-weight: 600; }
-  .timereminder {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 14px; background: var(--surface2); border-radius: var(--radius-sm);
-    margin-top: 8px; font-size: 0.85rem;
+  .demo-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);
   }
-  .timereminder .badge {
-    background: var(--accent); color: white; padding: 3px 10px;
-    border-radius: 12px; font-size: 0.72rem; font-weight: 600;
+  .demo-card .tag{
+    font-size:0.72rem;color:var(--text3);text-transform:uppercase;
+    letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px;
   }
+  .demo-card h4{font-size:1.5rem;font-weight:800}
+  .demo-card h4.score{color:var(--green)}
+  .demo-card h4.cost{color:var(--amber)}
+  .demo-card .sub{font-size:0.85rem;color:var(--text2);margin-bottom:10px}
+  .demo-card .row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap}
+  .demo-card .stat{flex:1;min-width:80px}
+  .demo-card .stat .l{font-size:0.7rem;color:var(--text3);text-transform:uppercase}
+  .demo-card .stat .v{font-size:0.95rem;font-weight:600}
+  .demo-card .reminder{
+    display:flex;align-items:center;gap:10px;
+    background:var(--accent-light);border-radius:var(--radius-sm);
+    padding:10px 12px;margin-top:8px;font-size:0.85rem;
+  }
+  .demo-card .reminder .pill{
+    background:var(--accent);color:#fff;padding:2px 10px;
+    border-radius:12px;font-size:0.72rem;font-weight:600;
+  }
+  @media(max-width:768px){.demo-grid{grid-template-columns:1fr}}
 
   /* ─── Pricing ─── */
-  .pricing-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px; margin-top: 20px;
+  .pricing-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0;
   }
-  .pricing-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 28px; text-align: center;
-    position: relative;
+  .pricing-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);
+    position:relative;
   }
-  .pricing-card.popular {
-    border-color: var(--accent);
-    background: linear-gradient(180deg, rgba(59,130,246,0.06), var(--surface));
+  .pricing-card.popular{
+    border-color:var(--accent);
+    background:linear-gradient(180deg,var(--accent-light),var(--surface));
   }
-  .pricing-card .popular-badge {
-    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-    background: var(--accent); color: white; padding: 4px 16px;
-    border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+  .pricing-card .badge{
+    position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+    background:var(--accent);color:#fff;padding:3px 14px;
+    border-radius:12px;font-size:0.72rem;font-weight:600;white-space:nowrap;
   }
-  .pricing-card .plan-name { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
-  .pricing-card .plan-desc { color: var(--text2); font-size: 0.82rem; margin-bottom: 16px; }
-  .pricing-card .price { font-size: 2.2rem; font-weight: 800; margin-bottom: 4px; }
-  .pricing-card .price small { font-size: 0.85rem; font-weight: 400; color: var(--text2); }
-  .pricing-card .perks { text-align: left; margin: 16px 0; }
-  .pricing-card .perk { padding: 5px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
-  .pricing-card .perk .check { color: var(--green); font-weight: 700; }
-  .pricing-card .perk.muted { color: var(--text2); opacity: 0.5; }
-  .pricing-card .perk.muted .check { color: var(--text2); }
-  .pricing-card .btn {
-    width: 100%; padding: 12px; border: none; border-radius: var(--radius-sm);
-    font-size: 0.9rem; font-weight: 600; cursor: pointer;
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); transition: all 0.2s;
+  .pricing-card .name{font-size:0.95rem;font-weight:600;margin-bottom:2px}
+  .pricing-card .desc{font-size:0.8rem;color:var(--text3);margin-bottom:14px}
+  .pricing-card .price{font-size:1.8rem;font-weight:800;margin-bottom:2px}
+  .pricing-card .price small{font-size:0.8rem;font-weight:400;color:var(--text2)}
+  .pricing-card .usage{font-size:0.78rem;color:var(--text3);margin-bottom:14px}
+  .pricing-card .perks{list-style:none;margin-bottom:16px}
+  .pricing-card .perks li{font-size:0.82rem;padding:4px 0;display:flex;align-items:center;gap:6px}
+  .pricing-card .perks li .check{color:var(--green)}
+  .pricing-card .perks li.muted{color:var(--text3);opacity:.5}
+  .pricing-card .perks li.muted .check{color:var(--text3)}
+  .pricing-card .btn{
+    width:100%;padding:11px;border-radius:var(--radius-sm);
+    font-size:0.88rem;font-weight:600;cursor:pointer;
+    background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);transition:all .2s;text-align:center;
   }
-  .pricing-card .btn.primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: white; border: none;
+  .pricing-card .btn:hover{background:var(--border)}
+  .pricing-card .btn.primary{
+    background:var(--accent);color:#fff;border:none;
   }
-  .pricing-card .btn:hover { opacity: 0.9; }
+  .pricing-card .btn.primary:hover{background:var(--accent2)}
+  @media(max-width:900px){.pricing-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:500px){.pricing-grid{grid-template-columns:1fr}}
 
-  /* ─── Garage Section ─── */
-  .garage-section {
-    max-width: 700px; margin: 0 auto; padding: 40px 20px; text-align: center;
+  /* ─── Garage ─── */
+  .garage{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:32px;text-align:center;
+    margin:40px 0;box-shadow:var(--shadow);
   }
-  .garage-section h2 { font-size: 1.4rem; margin-bottom: 6px; }
-  .garage-section p { color: var(--text2); margin-bottom: 20px; }
-  .garage-stats {
-    display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 20px;
+  .garage h2{font-size:1.3rem;margin-bottom:4px}
+  .garage > p{color:var(--text2);font-size:0.9rem;max-width:500px;margin:0 auto 20px}
+  .garage-stats{display:flex;justify-content:center;gap:32px;margin-bottom:20px;flex-wrap:wrap}
+  .garage-stat{text-align:center}
+  .garage-stat .n{font-size:2rem;font-weight:800;color:var(--accent)}
+  .garage-stat .l{font-size:0.85rem;color:var(--text3)}
+  .garage .btn{
+    background:linear-gradient(135deg,var(--green),#1a8a4a);color:#fff;
+    border:none;padding:12px 32px;border-radius:var(--radius-sm);
+    font-size:1rem;font-weight:600;cursor:pointer;
   }
-  .garage-stat { text-align: center; }
-  .garage-stat .num { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
-  .garage-stat .lbl { font-size: 0.82rem; color: var(--text2); }
+  .garage .btn:hover{opacity:.9}
 
-  .footer { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 0.8rem; border-top: 1px solid var(--border); }
-  .footer strong { color: var(--text); }
-
-  @media (max-width: 640px) {
-    .nav-links { display: none; }
-    .hero h1 { font-size: 1.8rem; }
-    .pricing-grid { grid-template-columns: 1fr; }
-    .demo-row { grid-template-columns: 1fr; }
+  /* ─── Footer ─── */
+  footer{
+    text-align:center;padding:40px 20px;color:var(--text3);font-size:0.82rem;
+    border-top:1px solid var(--border);margin-top:40px;
   }
 </style>
 </head>
 <body>
 
-<div class="nav">
-  <h1>⚡ <span>Vehical</span></h1>
-  <div class="nav-links">
-    <a href="#services">Services</a>
+<nav>
+  <div class="logo"><span class="icon">⚡</span> Vehical</div>
+  <div class="links">
+    <a href="#features">Features</a>
     <a href="#pricing">Pricing</a>
     <a href="#garage">For Garages</a>
   </div>
-  <a href="#pricing" class="cta-btn">Get Started</a>
-</div>
+  <button class="btn" onclick="location.href='#pricing'">Get Started</button>
+</nav>
 
-<div class="hero">
-  <h1>Your car, fully covered</h1>
-  <p>Vehicle history checks, MOT reminders, and true ownership costs — all in one place.</p>
-  <div class="search-demo">
-    <input type="text" placeholder="Enter reg..." maxlength="8" value="AB12 CDE" disabled>
+<!-- Hero -->
+<section class="hero">
+  <h1>Your car. <span>Covered.</span></h1>
+  <p>Vehicle history checks, MOT reminders, and true ownership costs — all in one place. From a real garage, not a faceless data company.</p>
+  <div class="search-box">
+    <input type="text" placeholder="Enter reg number..." maxlength="8" value="AB12 CDE" disabled>
     <button disabled>Check</button>
   </div>
-  <p style="color:var(--text2);font-size:0.85rem;margin-top:10px">Try it — open the demo below</p>
-</div>
+  <div class="trust-row">
+    <span>✅ DVLA &amp; DVSA data</span>
+    <span>📱 SMS reminders included</span>
+    <span>🔧 Built by a working MOT garage</span>
+  </div>
+</section>
 
-<!-- Services -->
-<div class="section" id="services">
-  <div class="section-title">Everything your <span>car</span> needs</div>
-  <div class="service-grid">
-    <div class="service-card">
+<div class="container">
+
+  <!-- How It Works -->
+  <div class="how">
+    <div class="how-step">
+      <div class="num">1</div>
+      <h3>Enter your reg</h3>
+      <p>Instant DVLA and DVSA data pulled in seconds.</p>
+    </div>
+    <div class="how-step">
+      <div class="num">2</div>
+      <h3>See the full picture</h3>
+      <p>History check, MOT timeline, valuation, running costs.</p>
+    </div>
+    <div class="how-step">
+      <div class="num">3</div>
+      <h3>Get reminded</h3>
+      <p>SMS alerts before your MOT expires. Tap to book.</p>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="section-title" id="features">Three services. <span>One subscription.</span></div>
+  <div class="features">
+    <div class="feature">
       <div class="icon">🔍</div>
       <h3>Vehicle History Check</h3>
-      <p>Instant DVLA data, full MOT history, valuation, ULEZ compliance, insurance group, deal verdict.</p>
-      <ul class="bullets">
-        <li>DVLA make/model/year/colour/fuel</li>
+      <p>Full DVLA data, MOT history, valuation, ULEZ compliance, and deal scoring.</p>
+      <ul>
+        <li>Make, model, year, colour, fuel</li>
         <li>Full MOT history with advisories</li>
-        <li>Private + dealer + part-ex valuation</li>
-        <li>ULEZ & CAZ compliance check</li>
-        <li>5-year depreciation projection</li>
+        <li>Private / dealer / part-ex valuation</li>
+        <li>ULEZ &amp; CAZ compliance</li>
         <li>BuyScore™ with deal verdict</li>
+        <li>Insurance group estimator</li>
       </ul>
     </div>
-    <div class="service-card">
+    <div class="feature">
       <div class="icon">📱</div>
       <h3>MOT Reminders</h3>
-      <p>Never miss your MOT again. SMS reminders at the right time, with tap-to-book at your local garage.</p>
-      <ul class="bullets">
+      <p>SMS alerts at key intervals so you never miss your MOT — plus tap-to-book at a partner garage.</p>
+      <ul>
         <li>4 SMS reminders (30/14/7/1 day)</li>
-        <li>Tax due alerts included</li>
-        <li>Tap-to-book at partner garages</li>
-        <li>Multi-vehicle support</li>
+        <li>Tax due alerts</li>
+        <li>Tap-to-book at local garages</li>
+        <li>Multi-vehicle support (up to 3)</li>
         <li>Cancel anytime</li>
       </ul>
     </div>
-    <div class="service-card">
+    <div class="feature">
       <div class="icon">📊</div>
       <h3>Cost of Ownership</h3>
-      <p>Know exactly what a car costs you — not just the price tag. Depreciation, fuel, tax, insurance, maintenance.</p>
-      <ul class="bullets">
+      <p>Know the true cost — not just the price tag. Depreciation, fuel, insurance, tax, maintenance.</p>
+      <ul>
         <li>5-year cost projection by year</li>
-        <li>Depreciation curve with chart</li>
-        <li>Fuel cost based on MPG/mileage</li>
-        <li>Insurance group estimator</li>
-        <li>Annual running cost total</li>
-        <li>Cost-per-mile breakdown</li>
+        <li>Depreciation curve</li>
+        <li>Fuel cost based on mileage</li>
+        <li>Insurance group + premium estimate</li>
+        <li>Annual total &amp; cost-per-mile</li>
       </ul>
     </div>
   </div>
-</div>
 
-<!-- Live Demo -->
-<div class="section">
+  <!-- Live Demo -->
   <div class="section-title">See it in <span>action</span></div>
-  <p style="text-align:center;color:var(--text2);margin-bottom:20px">Mock data showing what you get when you enter a reg</p>
-
-  <div class="demo-row">
-    <!-- Check -->
-    <div class="demo-panel">
-      <div class="title">🔍 Vehicle Check</div>
-      <div class="big score">82</div>
-      <div style="font-weight:600;margin:2px 0 6px">Volkswagen Golf 2019 · Black</div>
+  <p style="text-align:center;color:var(--text2);font-size:0.9rem;margin:-16px 0 24px">Mock data showing a 2019 Volkswagen Golf</p>
+  <div class="demo-grid">
+    <div class="demo-card">
+      <div class="tag">🔍 Vehicle Check</div>
+      <h4 class="score">82</h4>
+      <div class="sub">Volkswagen Golf 2019 · Black · 19,842 miles</div>
       <div class="row">
         <div class="stat"><div class="l">Valuation</div><div class="v">£11,250</div></div>
-        <div class="stat"><div class="l">ULEZ</div><div class="v" style="color:var(--green)">✅ Compliant</div></div>
-        <div class="stat"><div class="l">Insurance</div><div class="v">Group 22</div></div>
+        <div class="stat"><div class="l">ULEZ</div><div class="v" style="color:var(--green)">Compliant</div></div>
+        <div class="stat"><div class="l">Ins. Group</div><div class="v">22 of 50</div></div>
       </div>
       <div class="row">
-        <div class="stat"><div class="l">MOT Status</div><div class="v" style="color:var(--green)">Valid</div></div>
-        <div class="stat"><div class="l">Tax</div><div class="v">£180/yr</div></div>
+        <div class="stat"><div class="l">MOT Status</div><div class="v" style="color:var(--green)">✅ Valid</div></div>
+        <div class="stat"><div class="l">Road Tax</div><div class="v">£180/yr</div></div>
+        <div class="stat"><div class="l">CO₂</div><div class="v">114 g/km</div></div>
       </div>
     </div>
-
-    <!-- Reminder -->
-    <div class="demo-panel">
-      <div class="title">📱 MOT Reminders</div>
-      <div style="font-weight:600;margin-bottom:8px">AB12 CDE · Volkswagen Golf</div>
-      <div class="timereminder">
+    <div class="demo-card">
+      <div class="tag">📱 MOT Reminders</div>
+      <h4>12 May 2026</h4>
+      <div class="sub">MOT expiry · Volkswagen Golf</div>
+      <div class="reminder">
         <span>📅</span>
-        <span style="flex:1">MOT expires <strong>12 May 2026</strong></span>
-        <span class="badge">Active</span>
+        <span style="flex:1">Next reminder: <strong>5 May</strong> (7 days)</span>
+        <span class="pill">Active</span>
       </div>
-      <div class="timereminder" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)">
-        <span>🔔</span>
-        <span style="font-size:0.8rem">Next reminder: 5 May (7 days before)</span>
-      </div>
-      <div style="margin-top:8px;font-size:0.8rem;color:var(--text2)">
-        <div>📱 30 days · 14 days · <strong>7 days</strong> · 1 day</div>
+      <div style="margin-top:8px">
+        <div style="display:flex;gap:6px;font-size:0.78rem;color:var(--text3);flex-wrap:wrap">
+          <span>30 days → 14 days → <strong>7 days</strong> → 1 day</span>
+        </div>
+        <div style="font-size:0.82rem;color:var(--text2);margin-top:4px">
+          📧 Tax due alert: 1 Jun 2026
+        </div>
       </div>
     </div>
-
-    <!-- Ownership Cost -->
-    <div class="demo-panel">
-      <div class="title">📊 5-Year Ownership Cost</div>
-      <div class="big" style="color:var(--amber)">£38,240</div>
-      <div style="color:var(--text2);font-size:0.85rem;margin-bottom:8px">over 5 years · £637/month</div>
+    <div class="demo-card">
+      <div class="tag">📊 Cost of Ownership</div>
+      <h4 class="cost">£38,240</h4>
+      <div class="sub">over 5 years · £637/month · £0.31/mile</div>
       <div class="row">
-        <div class="stat"><div class="l">Depreciation</div><div class="v">-£8,750</div></div>
+        <div class="stat"><div class="l">Depreciation</div><div class="v" style="color:var(--red)">-£8,750</div></div>
         <div class="stat"><div class="l">Fuel</div><div class="v">£12,500</div></div>
+        <div class="stat"><div class="l">Insurance</div><div class="v">£5,400</div></div>
       </div>
       <div class="row">
-        <div class="stat"><div class="l">Insurance</div><div class="v">£5,400</div></div>
-        <div class="stat"><div class="l">Tax + Service</div><div class="v">£4,100</div></div>
+        <div class="stat"><div class="l">Tax</div><div class="v">£900</div></div>
+        <div class="stat"><div class="l">Service</div><div class="v">£3,200</div></div>
+        <div class="stat"><div class="l">Tyres</div><div class="v">£1,600</div></div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Pricing -->
-<div class="section" id="pricing">
-  <div class="section-title">Simple <span>pricing</span></div>
-  <p style="text-align:center;color:var(--text2);margin-bottom:10px">No hidden fees. Cancel anytime.</p>
-
+  <!-- Pricing -->
+  <div class="section-title" id="pricing">Simple pricing. <span>Cancel anytime.</span></div>
+  <p style="text-align:center;color:var(--text2);font-size:0.9rem;margin:-16px 0 24px">No hidden fees. All subscriptions are rolling and cancellable.</p>
   <div class="pricing-grid">
+
     <div class="pricing-card">
-      <div class="plan-name">One Check</div>
-      <div class="plan-desc">Single vehicle history report</div>
-      <div class="price">£1.99</div>
-      <div class="perks">
-        <div class="perk"><span class="check">✓</span> Full DVLA vehicle data</div>
-        <div class="perk"><span class="check">✓</span> MOT history + advisories</div>
-        <div class="perk"><span class="check">✓</span> Valuation (private/dealer/PX)</div>
-        <div class="perk"><span class="check">✓</span> ULEZ + CAZ compliance</div>
-        <div class="perk"><span class="check">✓</span> Deal verdict + BuyScore</div>
-        <div class="perk muted"><span class="check">✓</span> MOT reminders</div>
-        <div class="perk muted"><span class="check">✓</span> Ownership cost calculator</div>
-        <div class="perk muted"><span class="check">✓</span> Personal garage</div>
-      </div>
-      <button class="btn" onclick="alert('Demo — checkout flow')">Buy Check →</button>
+      <div class="name">One Check</div>
+      <div class="desc">Single vehicle history report</div>
+      <div class="price">£4.99</div>
+      <div class="usage">1 check · includes full report</div>
+      <ul class="perks">
+        <li><span class="check">✓</span> Full DVLA vehicle data</li>
+        <li><span class="check">✓</span> MOT history + advisories</li>
+        <li><span class="check">✓</span> Valuation (private/dealer/PX)</li>
+        <li><span class="check">✓</span> ULEZ + CAZ compliance</li>
+        <li><span class="check">✓</span> Deal verdict + BuyScore</li>
+        <li class="muted"><span class="check">✓</span> MOT reminders</li>
+        <li class="muted"><span class="check">✓</span> Ownership cost calculator</li>
+        <li class="muted"><span class="check">✓</span> Personal garage</li>
+      </ul>
+      <button class="btn" onclick="alert('Demo: £4.99 checkout')">Buy Check →</button>
     </div>
 
     <div class="pricing-card popular">
-      <div class="popular-badge">Best Value</div>
-      <div class="plan-name">Vehical Annual</div>
-      <div class="plan-desc">Everything. Unlimited checks, reminders, costs.</div>
-      <div class="price">£4.99 <small>/year</small></div>
-      <div class="perks">
-        <div class="perk"><span class="check">✓</span> Unlimited reg checks</div>
-        <div class="perk"><span class="check">✓</span> 4 SMS MOT reminders per vehicle</div>
-        <div class="perk"><span class="check">✓</span> Tax due alerts</div>
-        <div class="perk"><span class="check">✓</span> 5-year ownership cost</div>
-        <div class="perk"><span class="check">✓</span> Personal garage (up to 3 vehicles)</div>
-        <div class="perk"><span class="check">✓</span> Depreciation projection</div>
-        <div class="perk"><span class="check">✓</span> Insurance group estimator</div>
-        <div class="perk"><span class="check">✓</span> Tap-to-book at partner garages</div>
-        <div class="perk"><span class="check">✓</span> Cancel anytime</div>
-      </div>
-      <button class="btn primary" onclick="alert('Demo — Stripe checkout: £4.99/yr')">Subscribe £4.99/yr →</button>
+      <div class="badge">Most popular</div>
+      <div class="name">Standard</div>
+      <div class="desc">For one vehicle, full coverage</div>
+      <div class="price">£1.99 <small>/mo</small></div>
+      <div class="usage">or <strong>£18/yr</strong> (save 25%) · 10 checks/mo · 1 vehicle</div>
+      <ul class="perks">
+        <li><span class="check">✓</span> Unlimited history checks (10/mo)</li>
+        <li><span class="check">✓</span> 4 SMS MOT reminders</li>
+        <li><span class="check">✓</span> Tax due alerts</li>
+        <li><span class="check">✓</span> 5-year ownership costs</li>
+        <li><span class="check">✓</span> Personal garage (1 vehicle)</li>
+        <li><span class="check">✓</span> Depreciation projection</li>
+        <li><span class="check">✓</span> Insurance group estimator</li>
+        <li><span class="check">✓</span> Tap-to-book at partner garages</li>
+      </ul>
+      <button class="btn primary" onclick="alert('Demo: £1.99/mo Stripe checkout')">Start Standard →</button>
+      <p style="font-size:0.72rem;color:var(--text3);text-align:center;margin-top:6px">Save with annual: £18/yr · cancel anytime</p>
     </div>
 
     <div class="pricing-card">
-      <div class="plan-name">Garage Partner</div>
-      <div class="plan-desc">Get bookings. Pay only for results.</div>
+      <div class="name">Premium</div>
+      <div class="desc">Unlimited checks, multi-vehicle</div>
+      <div class="price">£4.99 <small>/mo</small></div>
+      <div class="usage">or <strong>£49/yr</strong> (save 18%) · 500 checks/mo · 3 vehicles</div>
+      <ul class="perks">
+        <li><span class="check">✓</span> Everything in Standard</li>
+        <li><span class="check">✓</span> 500 checks per month</li>
+        <li><span class="check">✓</span> Up to 3 vehicles in garage</li>
+        <li><span class="check">✓</span> SMS reminders for all 3 vehicles</li>
+        <li><span class="check">✓</span> Full API access (rate-limited)</li>
+        <li><span class="check">✓</span> Priority garage booking</li>
+        <li><span class="check">✓</span> Expense &amp; mileage tracking</li>
+      </ul>
+      <button class="btn primary" style="background:linear-gradient(135deg,var(--accent2),#4338ca)" onclick="alert('Demo: £4.99/mo Stripe checkout')">Start Premium →</button>
+      <p style="font-size:0.72rem;color:var(--text3);text-align:center;margin-top:6px">Save with annual: £49/yr · cancel anytime</p>
+    </div>
+
+    <div class="pricing-card">
+      <div class="name">Garage Partner</div>
+      <div class="desc">Get bookings. Pay for results.</div>
       <div class="price">£0</div>
-      <div style="margin:4px 0 12px;font-size:1.1rem;font-weight:600;color:var(--green)">+ £5 per booking</div>
-      <div class="perks">
-        <div class="perk"><span class="check">✓</span> Free to join</div>
-        <div class="perk"><span class="check">✓</span> Appear in driver booking flow</div>
-        <div class="perk"><span class="check">✓</span> Pay only when booked</div>
-        <div class="perk"><span class="check">✓</span> No monthly subscription</div>
-        <div class="perk"><span class="check">✓</span> Local area targeting</div>
-        <div class="perk"><span class="check">✓</span> Driver SMS includes your link</div>
-      </div>
-      <button class="btn" onclick="alert('Demo — garage onboarding flow')">Join Free →</button>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--green);margin-bottom:14px">+ £5 per booking</div>
+      <ul class="perks">
+        <li><span class="check">✓</span> Free to join — no upfront cost</li>
+        <li><span class="check">✓</span> Appear in driver booking flow</li>
+        <li><span class="check">✓</span> Pay only when booked &amp; completed</li>
+        <li><span class="check">✓</span> No monthly subscription</li>
+        <li><span class="check">✓</span> Local area targeting by postcode</li>
+        <li><span class="check">✓</span> Onboard in 2 minutes</li>
+      </ul>
+      <button class="btn" onclick="alert('Demo: garage signup flow')">Join Free →</button>
+    </div>
+
+  </div>
+
+  <!-- Usage Notes -->
+  <div style="background:var(--surface2);border-radius:var(--radius);padding:20px 24px;margin:16px 0;font-size:0.85rem;color:var(--text2)">
+    <strong style="color:var(--text)">💡 About API usage &amp; limits:</strong>
+    <div style="margin-top:6px;line-height:1.6">
+      <strong>Standard (10 checks/mo)</strong> — sufficient for personal use. Covers your own vehicle + occasional checks on cars you're buying. SMS reminders for 1 vehicle.<br>
+      <strong>Premium (500 checks/mo)</strong> — ideal for families, small fleets, or frequent buyers. Hard cap of 500/mo with rate limiting (5/min) to prevent abuse. SMS reminders for up to 3 vehicles.<br>
+      <strong>API abuse protection:</strong> All tiers are rate-limited per IP. Premium API access is rate-gated (5 req/min, 50/hr, 500/mo) to prevent scraping.
     </div>
   </div>
+
+  <!-- Garage Section -->
+  <div class="garage" id="garage">
+    <h2>🔧 For MOT Garages</h2>
+    <p>Get booked-up without spending on ads. You only pay £5 when a driver completes a booking through your link.</p>
+    <div class="garage-stats">
+      <div class="garage-stat"><div class="n">£0</div><div class="l">Upfront</div></div>
+      <div class="garage-stat"><div class="n">£5</div><div class="l">Per booking</div></div>
+      <div class="garage-stat"><div class="n">2 min</div><div class="l">To join</div></div>
+    </div>
+    <p style="font-size:0.85rem;color:var(--text2);max-width:550px;margin:0 auto 20px">
+      Your garage appears when a driver's MOT is due in your area. They tap the link in their SMS reminder, pick your garage, and book. You pay £5 only if they show up. No leads, no clicks, no monthly fees.
+    </p>
+    <button class="btn" onclick="alert('Demo: garage signup — enter name, postcode, phone')">Join as a Garage — Free</button>
+  </div>
+
 </div>
 
-<!-- Garage Section -->
-<div class="garage-section" id="garage">
-  <h2>🔧 For MOT Garages</h2>
-  <p>Get booked-up without spending a penny on ads. You only pay for completed bookings — £5 each.</p>
-  <div class="garage-stats">
-    <div class="garage-stat"><div class="num">£0</div><div class="lbl">Upfront cost</div></div>
-    <div class="garage-stat"><div class="num">£5</div><div class="lbl">Per booking</div></div>
-    <div class="garage-stat"><div class="num">2 min</div><div class="lbl">To join</div></div>
-  </div>
-  <p style="font-size:0.85rem;color:var(--text2)">
-    Your garage appears when a driver's MOT is due in your area. They tap the link in their reminder SMS, choose you, and book. You pay £5 only if they show up. No leads, no clicks, no monthly fees.
-  </p>
-  <div style="margin-top:20px">
-    <button class="cta-btn" style="background:linear-gradient(135deg,var(--green),#16a34a);padding:12px 32px;border:none;color:white;font-size:1rem;font-weight:600;border-radius:var(--radius-sm);cursor:pointer" onclick="alert('Demo — garage signup flow: name, postcode, phone, done')">⚡ Join as a Garage — Free</button>
-  </div>
-</div>
-
-<div class="footer">
-  <strong>Vehical</strong> · Built by Fast MOT, London Fields · Concept Demo
-</div>
+<footer>
+  <strong>Vehical</strong> · Built by Fast MOT, London Fields · Concept Demo · All data shown is mock<br>
+  <span style="font-size:0.75rem">© 2026 · Not affiliated with DVLA, DVSA, or any government body</span>
+</footer>
 
 <script>
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    e.preventDefault();
-    const el = document.querySelector(a.getAttribute('href'));
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  });
-});
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const el=document.querySelector(a.getAttribute('href'));if(el)el.scrollIntoView({behavior:'smooth'})})})
 </script>
 </body>
 </html>
