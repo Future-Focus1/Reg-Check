@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegCheck — Smart Vehicle History (Standalone)</title>
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #141b22;
+    --surface2: #1c2430;
+    --border: #252e3a;
+    --text: #e2e6ec;
+    --text2: #8b95a5;
+    --accent: #3b82f6;
+    --accent2: #2563eb;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  .hero { text-align: center; padding: 80px 20px 40px; transition: all 0.5s ease; }
+  .hero.compact { padding: 30px 20px 20px; }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800;
+    background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero p { color: var(--text2); font-size: 1.1rem; margin-top: 8px; }
+  .hero .badge {
+    display: inline-block; margin-top: 10px; background: var(--surface2); border: 1px solid var(--amber);
+    color: var(--amber); padding: 4px 14px; border-radius: 20px; font-size: 0.8rem;
+  }
+  .search-container { max-width: 520px; margin: 0 auto; padding: 0 20px; }
+  .search-box {
+    display: flex; background: var(--surface); border: 2px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; transition: border-color 0.3s;
+  }
+  .search-box:focus-within {
+    border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+  }
+  .search-box input {
+    flex: 1; background: none; border: none; padding: 16px 20px;
+    font-size: 1.4rem; color: var(--text); font-family: 'Courier New', monospace;
+    letter-spacing: 2px; text-transform: uppercase; outline: none; min-width: 0;
+  }
+  .search-box input::placeholder {
+    color: var(--text2); letter-spacing: 0; text-transform: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 1rem;
+  }
+  .search-box button {
+    background: var(--gradient); border: none; color: white;
+    padding: 16px 28px; font-size: 1rem; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s; white-space: nowrap;
+  }
+  .search-box button:hover { opacity: 0.9; }
+  .search-box button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .quick-lookups {
+    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center;
+  }
+  .quick-lookups button {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text2); padding: 6px 14px; border-radius: 20px;
+    font-size: 0.85rem; cursor: pointer; font-family: 'Courier New', monospace;
+    letter-spacing: 1px; transition: all 0.2s;
+  }
+  .quick-lookups button:hover { border-color: var(--accent); color: var(--accent); }
+  .loading { display: none; text-align: center; padding: 40px; color: var(--text2); }
+  .loading.active { display: block; }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .results { display: none; max-width: 980px; margin: 0 auto; padding: 0 20px 60px; animation: fadeUp 0.4s ease; }
+  .results.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .risk-banner { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .risk-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+  .risk-card .icon { font-size: 2rem; margin-bottom: 8px; }
+  .risk-card .label { font-size: 0.85rem; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .risk-card .status { font-weight: 700; font-size: 1.1rem; }
+  .risk-card.clear { border-left: 4px solid var(--green); } .risk-card.clear .status { color: var(--green); }
+  .risk-card.warn { border-left: 4px solid var(--amber); } .risk-card.warn .status { color: var(--amber); }
+  .risk-card.danger { border-left: 4px solid var(--red); } .risk-card.danger .status { color: var(--red); }
+  .score-section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  }
+  .score-circle {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: conic-gradient(var(--green) 0deg 288deg, var(--surface2) 288deg 360deg);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .score-inner {
+    width: 82px; height: 82px; border-radius: 50%; background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 800; color: var(--green);
+  }
+  .score-text h3 { font-size: 1.3rem; margin-bottom: 4px; }
+  .score-text p { color: var(--text2); font-size: 0.95rem; }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+  .section-header {
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .section-header h3 { font-size: 1rem; display: flex; align-items: center; gap: 10px; }
+  .section-header .chevron { transition: transform 0.3s; color: var(--text2); }
+  .section.open .section-header .chevron { transform: rotate(180deg); }
+  .section-body { display: none; padding: 0 20px 20px; }
+  .section.open .section-body { display: block; }
+  .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .data-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; }
+  .data-item .dl { font-size: 0.78rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .data-item .dv { font-weight: 600; font-size: 1.05rem; }
+  .mot-timeline { position: relative; padding-left: 24px; }
+  .mot-timeline::before {
+    content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: var(--border);
+  }
+  .mot-entry { position: relative; padding: 12px 0; display: flex; align-items: flex-start; gap: 16px; }
+  .mot-entry::before {
+    content: ''; position: absolute; left: -20px; top: 18px; width: 10px; height: 10px;
+    border-radius: 50%; background: var(--green); border: 2px solid var(--surface);
+  }
+  .mot-entry.fail::before { background: var(--red); }
+  .mot-date { font-size: 0.85rem; color: var(--text2); min-width: 90px; }
+  .mot-result { font-weight: 600; font-size: 0.95rem; }
+  .mot-mileage { font-size: 0.85rem; color: var(--text2); }
+  .mot-advisory { font-size: 0.82rem; color: var(--amber); margin-top: 2px; }
+  .ulez-banner { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; }
+  .ulez-banner.compliant { border-left: 4px solid var(--green); }
+  .ulez-banner.noncompliant { border-left: 4px solid var(--red); }
+  .ulez-icon { font-size: 2rem; flex-shrink: 0; }
+  .ulez-info h4 { font-size: 1rem; margin-bottom: 4px; }
+  .ulez-info p { font-size: 0.88rem; color: var(--text2); }
+  .ulez-charge { font-size: 0.82rem; color: var(--amber); margin-top: 4px; }
+  .depreciation-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 10px 0; }
+  .dep-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .dep-bar { width: 100%; max-width: 60px; background: var(--gradient); border-radius: 6px 6px 0 0; transition: height 0.5s ease; min-height: 4px; }
+  .dep-bar.future { opacity: 0.5; }
+  .dep-label { font-size: 0.7rem; color: var(--text2); margin-top: 6px; text-align: center; }
+  .dep-value { font-size: 0.75rem; font-weight: 600; margin-top: 2px; text-align: center; }
+  .dep-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 16px; }
+  .dep-stat { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+  .dep-stat .dl { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; }
+  .dep-stat .dv { font-size: 1.2rem; font-weight: 700; margin-top: 2px; }
+  .dep-stat .dv.loss { color: var(--red); }
+  .verdict-banner { padding: 24px; border-radius: var(--radius); margin-bottom: 16px; text-align: center; }
+  .verdict-banner.recommend { background: linear-gradient(135deg, #166534, #1a3a2a); border: 1px solid var(--green); }
+  .verdict-banner.caution { background: linear-gradient(135deg, #5c3d0e, #3a2a10); border: 1px solid var(--amber); }
+  .verdict-banner.risky { background: linear-gradient(135deg, #5c1a1a, #3a1010); border: 1px solid var(--red); }
+  .verdict-banner.avoid { background: linear-gradient(135deg, #4a1010, #2a0808); border: 1px solid #7f1d1d; }
+  .verdict-banner.insufficient_data { background: var(--surface); border: 1px solid var(--border); }
+  .verdict-icon { font-size: 3rem; margin-bottom: 8px; }
+  .verdict-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+  .verdict-summary { color: var(--text2); font-size: 0.95rem; margin-bottom: 12px; }
+  .verdict-recommendation { font-size: 0.9rem; font-style: italic; color: var(--text2); margin-bottom: 12px; }
+  .verdict-flags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; }
+  .verdict-flag { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; background: rgba(239,68,68,0.15); color: var(--red); }
+  .verdict-positive { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; background: rgba(34,197,94,0.15); color: var(--green); }
+  .garage-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+  .garage-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .garage-btn.saved { border-color: var(--green); color: var(--green); }
+  .garage-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; display: none; }
+  .garage-panel.active { display: block; }
+  .garage-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .garage-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; cursor: pointer; transition: all 0.2s; font-family: 'Courier New', monospace; font-size: 0.9rem; }
+  .garage-item:hover { border-color: var(--accent); }
+  .garage-item .remove { margin-left: 8px; color: var(--red); cursor: pointer; font-size: 0.8rem; }
+  .app-footer { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 0.85rem; }
+  .error-msg { text-align: center; color: var(--red); padding: 20px; display: none; }
+  .error-msg.active { display: block; }
+  @media (max-width: 640px) {
+    .search-box { flex-direction: column; }
+    .search-box button { border-radius: 0; }
+    .score-section { flex-direction: column; text-align: center; }
+    .risk-banner { grid-template-columns: repeat(2, 1fr); }
+    .data-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero" id="hero">
+  <h1>RegCheck</h1>
+  <p>Smart vehicle history. No clutter, just what matters.</p>
+  <div class="badge">⚡ Standalone Demo — Mock Data + Real UX</div>
+</div>
+
+<div class="search-container">
+  <div class="search-box">
+    <input type="text" id="vrmInput" placeholder="Enter registration number..." maxlength="8" autocomplete="off">
+    <button id="searchBtn" onclick="doLookup()">Check Vehicle</button>
+  </div>
+  <div class="quick-lookups">
+    <button onclick="quickLookup('AB12CDE')">AB12 CDE</button>
+    <button onclick="quickLookup('OY15RXF')">OY15 RXF</button>
+    <button onclick="quickLookup('LG60KXZ')">LG60 KXZ</button>
+    <span style="color:var(--text2);font-size:0.8rem;margin-left:4px">or type any UK reg</span>
+  </div>
+</div>
+
+<div class="results" id="garagePanel" style="max-width:980px;margin:0 auto;padding:0 20px 20px;display:none;">
+  <div class="garage-panel active" style="margin-bottom:0">
+    <h4 style="margin-bottom:10px;display:flex;align-items:center;gap:8px">🏠 My Garage <span id="garageCount" style="color:var(--text2);font-size:0.85rem;font-weight:400"></span></h4>
+    <div class="garage-list" id="garageList"></div>
+    <p id="garageEmpty" style="color:var(--text2);font-size:0.85rem">Search for a vehicle and click "Save to Garage" to start comparing cars side-by-side.</p>
+  </div>
+</div>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>Generating comprehensive vehicle report...</p>
+</div>
+
+<div class="error-msg" id="error"></div>
+<div class="results" id="results"></div>
+
+<div class="app-footer">
+  RegCheck Prototype &copy; 2026 &mdash; Standalone Demo
+</div>
+
+<script>
+// ── Helpers ──
+function fmtCurrency(n) { return '£' + Number(n).toLocaleString(); }
+function quickLookup(vrm) { document.getElementById('vrmInput').value = vrm; doLookup(); }
+
+// ── Data Generation ──
+const MAKES = ['Audi','BMW','Ford','Mercedes-Benz','Nissan','Toyota','Volkswagen','Vauxhall','Peugeot','Renault','Hyundai','Kia','Honda','Mazda','MINI','Jaguar','Land Rover','Volvo','Fiat','Skoda','Tesla'];
+const MODELS = {
+  'Audi':['A3','A4','A6','Q3','Q5','Q7','e-tron'], 'BMW':['3 Series','5 Series','X3','X5','X1','i4','iX3'],
+  'Ford':['Focus','Fiesta','Puma','Kuga','Mustang','Ranger'], 'Mercedes-Benz':['A-Class','C-Class','E-Class','GLA','GLC','EQC'],
+  'Nissan':['Qashqai','Juke','Micra','Leaf','X-Trail'], 'Toyota':['Yaris','Corolla','RAV4','C-HR','Aygo'],
+  'Volkswagen':['Golf','Polo','Tiguan','T-Roc','ID.3','ID.4'], 'Vauxhall':['Corsa','Astra','Mokka','Grandland'],
+  'Peugeot':['208','308','3008','5008','e-208'], 'Renault':['Clio','Captur','Zoe','Megane','Austral'],
+  'Hyundai':['i10','i20','Tucson','Kona','IONIQ 5'], 'Kia':['Picanto','Sportage','Niro','EV6','Sorento'],
+  'Honda':['Civic','CR-V','HR-V','Jazz','e'], 'Mazda':['Mazda2','Mazda3','CX-5','MX-5'],
+  'MINI':['Cooper','Countryman','Clubman','Electric'], 'Jaguar':['F-PACE','E-PACE','I-PACE','XE','XF'],
+  'Land Rover':['Discovery','Range Rover Evoque','Range Rover Velar','Defender'], 'Volvo':['XC40','XC60','XC90','S60','V60'],
+  'Fiat':['500','Panda','500X','500e','Doblo'], 'Skoda':['Octavia','Fabia','Karoq','Kodiaq','Enyaq'],
+  'Tesla':['Model 3','Model Y','Model S','Model X','Cybertruck']
+};
+const COLOURS = ['Black','White','Grey','Blue','Red','Silver','Green','Yellow','Orange','Purple','Gold'];
+const FUELS = ['PETROL','DIESEL','ELECTRIC','HYBRID'];
+const BODIES = ['Hatchback','Saloon','SUV','Estate','Coupe','Convertible'];
+const TRANSMISSIONS = ['Manual','Automatic','Semi-Auto'];
+const FAILURE_REASONS = [
+  'Nearside front position lamp not working','Offside rear tyre tread depth below requirements',
+  'Registration plate lamp inoperative','Headlamp aim too low','Offside front suspension arm pin or bush excessively worn',
+  'Brake disc worn, pitted or scored','Front brake pad(s) less than 1.5mm thick','Nearside front tyre has a cut in excess of requirements',
+  'Windscreen washer provides insufficient washer liquid','Parking brake efficiency below requirements',
+  'Nearside front anti-roll bar linkage ball joint dust cover no longer prevents ingress of dirt',
+  'Offside rear shock absorber has a seriously reduced damping effect',
+  'Exhaust system insecure','Power steering component leaking',
+  'Nearside front drive shaft joint constant velocity boot split'
+];
+const ADVISORY_REASONS = [
+  'Nearside front tyre worn close to legal limit','Offside rear tyre worn close to legal limit',
+  'Front brake disc worn, pitted or scored but not seriously weakened',
+  'Rear brake disc worn, pitted or scored but not seriously weakened',
+  'Under-trays fitted obscuring some underside components',
+  'Engine covers fitted obscuring some components in the engine bay',
+  'Oil leak, but not excessive','Nearside rear tyre slightly damaged/cracking',
+  'Front suspension arm pin or bush worn but not resulting in excessive movement',
+  'Nearside front brake disc slightly worn'
+];
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function generateMockData(vrm) {
+  const make = pick(MAKES);
+  const model = pick(MODELS[make] || ['Unknown']);
+  const colour = pick(COLOURS);
+  const fuel = rand(0, 100) < 80 ? (pick(['PETROL','DIESEL']) + (rand(1,100) > 85 ? '' : '')) : pick(FUELS);
+  const fuelType = fuel;
+  const year = rand(2010, 2025);
+  const hasFailures = rand(0, 10) < 3;
+  const motCount = rand(5, 12);
+  const engineSize = pick([999,1197,1242,1364,1398,1499,1598,1798,1997,2198,2496,2993]);
+  const body = pick(BODIES);
+  const transmission = pick(TRANSMISSIONS);
+  const mpg = fuelType === 'ELECTRIC' ? null : rand(35, 65);
+  const co2 = fuelType === 'ELECTRIC' ? 0 : rand(95, 220);
+  const taxStatus = rand(0, 100) < 90 ? 'Taxed' : 'Untaxed';
+  const motStatus = rand(0, 100) < 88 ? 'Valid' : 'Expired';
+  const euroStatus = year >= 2020 ? 'EURO 6' : year >= 2015 ? 'EURO 6' : year >= 2011 ? 'EURO 5' : 'EURO 4';
+
+  const mileageBase = rand(8000, 16000);
+  const motHistory = [];
+  let mileage = mileageBase;
+  for (let i = 0; i < motCount; i++) {
+    const isFail = hasFailures && i === 1;
+    const isRetest = isFail;
+    const testDate = `${year - motCount + i}-${String(rand(1,12)).padStart(2,'0')}-${String(rand(1,28)).padStart(2,'0')}`;
+    const advCount = rand(0,3);
+    const advisories = [];
+    for (let a = 0; a < advCount; a++) advisories.push({ text: pick(ADVISORY_REASONS), dangerous: rand(0,10) < 1 });
+    const failCount = isFail ? rand(1,5) : 0;
+    const defects = [];
+    for (let d = 0; d < failCount; d++) defects.push({ text: pick(FAILURE_REASONS), dangerous: rand(0,10) < 2 });
+
+    motHistory.push({
+      date: testDate,
+      result: isFail ? 'FAIL' : 'PASS',
+      mileage: Math.max(100, mileage + (mileage > 50000 ? rand(-2000, 3000) : rand(0, 200))),
+      mileageUnit: 'mi',
+      expiryDate: isFail ? null : `${Number(year) + 1}-${String(rand(1,12)).padStart(2,'0')}-${String(rand(1,28)).padStart(2,'0')}`,
+      advisories: advisories.map(a => `${a.text}${a.dangerous ? ' [DANGEROUS]' : ''}`),
+      defects: defects.map(d => `${d.text}${d.dangerous ? ' [DANGEROUS]' : ''}`),
+    });
+    mileage += rand(5000, 12000);
+  }
+
+  motHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+  const currentMOT = motHistory.length > 0 && motHistory[0].result === 'PASS' ? motHistory[0] : null;
+
+  const valuationPrivate = rand(1500, 45000);
+  const valuationDealer = Math.round(valuationPrivate * rand(105, 120) / 100);
+  const valuationPartX = Math.round(valuationPrivate * rand(80, 95) / 100);
+
+  let score = 50;
+  if (fuelType !== 'DIESEL') score += 10;
+  if (taxStatus === 'Taxed') score += 10;
+  if (motStatus === 'Valid') score += 10;
+  if (motHistory.length > 3) score += 10;
+  if (currentMOT) score += 10;
+  if (year >= 2019) score += 10;
+  if (hasFailures) score -= 10;
+  if (euroStatus === 'EURO 6') score += 5;
+  if (fuelType === 'ELECTRIC') score += 5;
+  score = Math.max(0, Math.min(100, score));
+
+  return {
+    overview: {
+      reg: vrm,
+      make, model, year,
+      colour, fuel: fuelType,
+      engine: `${engineSize}cc`,
+      transmission, body,
+      co2, tax: taxStatus === 'Taxed' ? `£${co2 <= 100 ? 0 : co2 <= 150 ? rand(20,185) : rand(190,735)}/year` : 'Untaxed',
+      taxStatus, taxDue: taxStatus === 'Taxed' ? `${Number(year)+1}-06-01` : null,
+      motStatus, motExpiry: currentMOT?.expiryDate || 'Expired',
+      previousKeepers: rand(1,5),
+      v5cIssued: `${year}-03-15`,
+      euroStatus,
+    },
+    motHistory,
+    risks: {
+      finance: { status: 'clear', text: 'No finance recorded' },
+      stolen: { status: 'clear', text: 'Not recorded as stolen' },
+      writeoff: { status: 'clear', text: 'No write-off categories found' },
+      mileage: motHistory.length >= 2 ? { status: 'clear', text: 'Mileage consistent across MOT history' } : { status: 'unknown', text: 'Insufficient data' },
+      scrapped: { status: 'clear', text: 'Not scrapped or exported' },
+    },
+    score,
+    scoreText: score >= 70 ? 'Good — based on available records' : score >= 40 ? 'Fair — check details carefully' : 'Review needed',
+    valuation: { private: valuationPrivate, dealer: valuationDealer, partExchange: valuationPartX },
+    runningCosts: {
+      annualFuel: fuelType === 'ELECTRIC' ? 840 : Math.round(mpg ? (10000 / mpg) * 6.5 : 2000),
+      annualTax: co2 <= 100 ? 0 : co2 <= 150 ? 180 : 365,
+      annualInsurance: estimateInsurance(engineSize, fuelType),
+      annualService: rand(250, 700),
+      monthlyTotal: 0,
+    },
+    ulez: checkULEZ(fuelType, year, co2),
+    depreciation: calcDepreciation(make, model, year, valuationPrivate),
+    insurance: { group: estimateInsurance(engineSize, fuelType), annual: estimateInsurance(engineSize, fuelType, true) },
+    dealVerdict: evaluateDeal(valuationPrivate, motHistory, { hasFailures, fuelType, year }, { make, model }),
+  };
+}
+
+function estimateInsurance(cc, fuel, annual) {
+  let base = 18;
+  if (cc > 2000) base += 12;
+  else if (cc > 1600) base += 6;
+  else if (cc < 1200) base -= 4;
+  if (fuel === 'ELECTRIC') base -= 6;
+  if (fuel === 'HYBRID') base -= 3;
+  if (fuel === 'DIESEL') base += 3;
+  const group = Math.max(1, Math.min(50, base));
+  if (annual) return Math.round(group * 45 + rand(-100, 300));
+  return group;
+}
+
+function checkULEZ(fuel, year, co2) {
+  const diesel = fuel === 'DIESEL';
+  const petrol = fuel === 'PETROL' || fuel === 'HYBRID';
+  const electric = fuel === 'ELECTRIC';
+
+  let compliant = false;
+  if (electric) compliant = true;
+  else if (petrol && year >= 2005) compliant = true;
+  else if (diesel && year >= 2015) compliant = true;
+  else if (petrol && co2 <= 150) compliant = true;
+
+  return {
+    londonULEZ: { compliant, charge: compliant ? '£0' : '£12.50/day', detail: compliant ? 'Vehicle meets ULEZ standards' : `${fuel} ${year} model likely non-compliant` },
+    summary: compliant ? '✅ ULEZ Compliant' : '⚠️ Non-compliant in ULEZ zones',
+    birminghamCAZ: { compliant, charge: compliant ? '£0' : '£8/day', detail: compliant ? 'Compliant' : 'Likely non-compliant' },
+  };
+}
+
+function calcDepreciation(make, model, year, value) {
+  const age = 2026 - year;
+  if (age < 0) return null;
+  const rates = [0, 0.2, 0.35, 0.48, 0.55, 0.62, 0.68, 0.73, 0.77, 0.8];
+  const years = [];
+  for (let i = 0; i <= 5; i++) {
+    const depRate = rates[Math.min(age + i, rates.length - 1)] || 0.85;
+    years.push({ year: year + i, value: Math.round(value * (1 - depRate)), retained: Math.round((1 - depRate) * 100) });
+  }
+  return {
+    purchaseValue: value,
+    years,
+    fiveYearLoss: Math.round(value - years[Math.min(5, years.length - 1)]?.value),
+    annualDepreciation: age > 0 ? Math.round(value * 0.15) : Math.round(value * 0.2),
+  };
+}
+
+function evaluateDeal(value, motHistory, vehicle, details) {
+  if (!value || !motHistory || motHistory.length === 0) {
+    return { verdict: 'insufficient_data', summary: 'Not enough data to evaluate this deal.', score: 0 };
+  }
+  let score = 60;
+  const flags = [];
+  const positives = [];
+
+  if (motHistory[0]?.result === 'PASS') { score += 15; positives.push('Latest MOT passed'); }
+  if (motHistory.some(m => m.result === 'FAIL')) { score -= 10; flags.push('Has failed an MOT'); }
+  if (motHistory[0]?.mileage && motHistory[0].mileage > 100000) { score -= 5; flags.push('High mileage'); }
+  if (vehicle.year && vehicle.year >= 2020) { score += 10; positives.push('Relatively new vehicle'); }
+  if (vehicle.fuelType === 'ELECTRIC') { score += 10; positives.push('Electric — running costs'); }
+  if (vehicle.fuelType === 'DIESEL' && vehicle.year < 2016) { score -= 8; flags.push('Older diesel — ULEZ risk'); }
+  if (motHistory.length > 5) { score += 5; positives.push('Extensive MOT history'); }
+
+  score = Math.max(0, Math.min(100, score));
+  let verdict, summary, recommendation;
+  if (score >= 75) { verdict = 'recommend'; summary = 'This is a solid buy'; recommendation = 'Good vehicle with positive indicators across the board.'; }
+  else if (score >= 55) { verdict = 'caution'; summary = 'Proceed with caution'; recommendation = 'Nothing alarming but check the flagged items carefully.'; }
+  else if (score >= 35) { verdict = 'risky'; summary = 'Higher risk — inspect thoroughly'; recommendation = 'Multiple concerns — get a professional inspection before buying.'; }
+  else { verdict = 'avoid'; summary = 'Avoid — too many concerns'; recommendation = 'Consider walking away from this one.'; }
+
+  return { verdict, summary, score, recommendation, flags, positives };
+}
+
+// ── UI ──
+function doLookup() {
+  const input = document.getElementById('vrmInput');
+  const vrm = input.value.trim().replace(/\s/g, '').toUpperCase();
+  if (!vrm) { showError('Please enter a registration number.'); return; }
+
+  hideError();
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('results').classList.remove('active');
+  document.getElementById('searchBtn').disabled = true;
+  document.querySelector('.hero').classList.add('compact');
+
+  setTimeout(() => {
+    try {
+      const data = generateMockData(vrm);
+      renderResults(data);
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('results').classList.add('active');
+      document.getElementById('searchBtn').disabled = false;
+    } catch(e) {
+      showError('Error generating report. Please try again.');
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('searchBtn').disabled = false;
+    }
+  }, 800 + Math.random() * 400);
+}
+
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = msg; el.classList.add('active');
+}
+
+function hideError() {
+  document.getElementById('error').classList.remove('active');
+}
+
+function renderResults(d) {
+  const el = document.getElementById('results');
+  const scoreClass = d.score >= 70 ? 'green' : d.score >= 40 ? 'var(--amber)' : 'var(--red)';
+  const scoreColor = d.score >= 70 ? '#22c55e' : d.score >= 40 ? '#f59e0b' : '#ef4444';
+  const scoreDeg = d.score * 3.6;
+
+  const lastMOT = d.motHistory[0] || null;
+  const motBadge = d.overview.motStatus === 'Valid'
+    ? `<span style="color:var(--green)">✅ Valid until ${lastMOT?.expiryDate || '—'}</span>`
+    : `<span style="color:var(--red)">⚠️ Expired / No MOT</span>`;
+
+  el.innerHTML = `
+    <!-- Score -->
+    <div class="score-section">
+      <div class="score-circle" style="background:conic-gradient(${scoreColor} 0deg ${scoreDeg}deg, var(--surface2) ${scoreDeg}deg 360deg)">
+        <div class="score-inner" style="color:${scoreColor}">${d.score}</div>
+      </div>
+      <div class="score-text">
+        <h3>${d.overview.make} ${d.overview.model} (${d.overview.year})</h3>
+        <p>${d.overview.reg} &middot; ${d.overview.colour} &middot; ${d.overview.engine} &middot; ${d.overview.fuel}</p>
+        <p style="margin-top:4px;font-size:0.9rem">${d.scoreText} &middot; ${motBadge}</p>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <button class="garage-btn" id="garageBtn" onclick="toggleGarage('${d.overview.reg}','${d.overview.make} ${d.overview.model} (${d.overview.year})',${d.score})">☆ Save to Garage</button>
+      </div>
+    </div>
+
+    <!-- Risk Banner -->
+    <div class="risk-banner">
+      ${Object.entries(d.risks).map(([k,v]) => `
+        <div class="risk-card ${v.status}">
+          <div class="icon">${v.status === 'clear' ? '✅' : v.status === 'warn' ? '⚠️' : v.status === 'danger' ? '🚨' : '❓'}</div>
+          <div class="label">${k}</div>
+          <div class="status">${v.text}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- ULEZ -->
+    <div class="ulez-banner ${d.ulez.londonULEZ.compliant ? 'compliant' : 'noncompliant'}">
+      <div class="ulez-icon">${d.ulez.londonULEZ.compliant ? '🌱' : '💷'}</div>
+      <div class="ulez-info">
+        <h4>${d.ulez.summary}</h4>
+        <p>London ULEZ: ${d.ulez.londonULEZ.charge} &middot; Birmingham CAZ: ${d.ulez.birminghamCAZ.charge}</p>
+        <div class="ulez-charge">${d.ulez.londonULEZ.detail}</div>
+      </div>
+    </div>
+
+    <!-- Deal Verdict -->
+    <div class="verdict-banner ${d.dealVerdict.verdict}">
+      <div class="verdict-icon">${d.dealVerdict.verdict === 'recommend' ? '🟢' : d.dealVerdict.verdict === 'caution' ? '🟡' : d.dealVerdict.verdict === 'risky' ? '🔴' : d.dealVerdict.verdict === 'avoid' ? '⛔' : '❓'}</div>
+      <div class="verdict-title">${d.dealVerdict.summary}</div>
+      <div class="verdict-summary">Score: ${d.dealVerdict.score}/100</div>
+      ${d.dealVerdict.recommendation ? `<div class="verdict-recommendation">${d.dealVerdict.recommendation}</div>` : ''}
+      <div class="verdict-flags">
+        ${(d.dealVerdict.flags || []).map(f => `<span class="verdict-flag">${f}</span>`).join('')}
+        ${(d.dealVerdict.positives || []).map(p => `<span class="verdict-positive">${p}</span>`).join('')}
+      </div>
+    </div>
+
+    <!-- Vehicle Details -->
+    <div class="section open">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>🚗 Vehicle Details</h3><span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="data-grid">
+          ${Object.entries({
+            'Registration': d.overview.reg,
+            'Make': d.overview.make,
+            'Model': d.overview.model,
+            'Year': d.overview.year,
+            'Colour': d.overview.colour,
+            'Fuel Type': d.overview.fuel,
+            'Engine': d.overview.engine,
+            'Transmission': d.overview.transmission,
+            'Body Type': d.overview.body,
+            'CO₂ Emissions': d.overview.co2 ? `${d.overview.co2} g/km` : '—',
+            'Euro Status': d.overview.euroStatus,
+            'Tax Status': d.overview.tax,
+            'MOT Status': d.overview.motExpiry ? `Valid until ${d.overview.motExpiry}` : 'No valid MOT',
+            'Previous Keepers': d.overview.previousKeepers || '—',
+          }).map(([k,v]) => `<div class="data-item"><div class="dl">${k}</div><div class="dv">${v}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- MOT History -->
+    <div class="section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>📋 MOT History (${d.motHistory.length} tests)</h3><span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        ${d.motHistory.length > 0 ? `
+        <div class="mot-timeline">
+          ${d.motHistory.map(m => `
+            <div class="mot-entry ${m.result === 'FAIL' ? 'fail' : ''}">
+              <div class="mot-date">${m.date}</div>
+              <div>
+                <div class="mot-result" style="color:${m.result === 'PASS' ? '#22c55e' : '#ef4444'}">${m.result}${m.mileage ? '' : ' (no odometer)'}</div>
+                ${m.mileage ? `<div class="mot-mileage">📏 ${m.mileage.toLocaleString()} miles</div>` : ''}
+                ${m.expiryDate ? `<div class="mot-mileage" style="color:var(--text2)">Valid until: ${m.expiryDate}</div>` : ''}
+                ${m.advisories.map(a => `<div class="mot-advisory">⚠️ ${a}</div>`).join('')}
+                ${m.defects.map(d => `<div class="mot-advisory" style="color:var(--red)">❌ ${d}</div>`).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        ` : '<p style="color:var(--text2)">No MOT history available.</p>'}
+      </div>
+    </div>
+
+    <!-- Valuation -->
+    ${d.valuation ? `
+    <div class="section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>💰 Valuation</h3><span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="valuation-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+          <div class="val-card" style="background:var(--surface2);border-radius:var(--radius-sm);padding:18px;text-align:center">
+            <div class="val-label" style="font-size:0.82rem;color:var(--text2);margin-bottom:6px">Private Sale</div>
+            <div class="val-amount" style="font-size:1.5rem;font-weight:800">${fmtCurrency(d.valuation.private)}</div>
+          </div>
+          <div class="val-card featured" style="background:var(--gradient);border-radius:var(--radius-sm);padding:18px;text-align:center">
+            <div class="val-label" style="font-size:0.82rem;margin-bottom:6px;color:rgba(255,255,255,0.75)">Retail (Dealer)</div>
+            <div class="val-amount" style="font-size:1.5rem;font-weight:800;color:white">${fmtCurrency(d.valuation.dealer)}</div>
+          </div>
+          <div class="val-card" style="background:var(--surface2);border-radius:var(--radius-sm);padding:18px;text-align:center">
+            <div class="val-label" style="font-size:0.82rem;color:var(--text2);margin-bottom:6px">Part Exchange</div>
+            <div class="val-amount" style="font-size:1.5rem;font-weight:800">${fmtCurrency(d.valuation.partExchange)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    ` : ''}
+
+    <!-- Depreciation -->
+    ${d.depreciation ? `
+    <div class="section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>📉 Depreciation Projection (5-year)</h3><span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="depreciation-chart">
+          ${d.depreciation.years.map((y,i) => {
+            const maxVal = d.depreciation.years[0].value;
+            const h = Math.max(4, (y.value / maxVal) * 140);
+            return `<div class="dep-bar-wrap"><div class="dep-bar ${i > 0 ? 'future' : ''}" style="height:${h}px"></div><div class="dep-label">${y.year}</div><div class="dep-value">${fmtCurrency(y.value)}</div></div>`;
+          }).join('')}
+        </div>
+        <div class="dep-stats">
+          <div class="dep-stat"><div class="dl">Purchase Price</div><div class="dv">${fmtCurrency(d.depreciation.purchaseValue)}</div></div>
+          <div class="dep-stat"><div class="dl">5-Year Loss</div><div class="dv loss">-${fmtCurrency(d.depreciation.fiveYearLoss)}</div></div>
+          <div class="dep-stat"><div class="dl">Annual Depreciation</div><div class="dv loss">-${fmtCurrency(d.depreciation.annualDepreciation)}</div></div>
+        </div>
+      </div>
+    </div>
+    ` : ''}
+
+    <!-- Insurance -->
+    ${d.insurance ? `
+    <div class="section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>🛡️ Insurance</h3><span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="data-grid">
+          <div class="data-item"><div class="dl">Insurance Group</div><div class="dv">${d.insurance.group} of 50</div></div>
+          <div class="data-item"><div class="dl">Est. Annual Premium</div><div class="dv">${fmtCurrency(d.insurance.annual)}</div></div>
+        </div>
+      </div>
+    </div>
+    ` : ''}
+
+    <!-- Running Costs -->
+    ${d.runningCosts ? `
+    <div class="section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>⚡ Running Costs (Annual Estimate)</h3><span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="data-grid">
+          ${Object.entries({
+            'Fuel': fmtCurrency(d.runningCosts.annualFuel),
+            'Tax': fmtCurrency(d.runningCosts.annualTax),
+            'Insurance': fmtCurrency(d.runningCosts.annualInsurance),
+            'Service & Maintenance': fmtCurrency(d.runningCosts.annualService),
+          }).map(([k,v]) => `<div class="data-item"><div class="dl">${k}</div><div class="dv">${v}/year</div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ` : ''}
+  `;
+
+  // Check garage state for this VRM
+  updateGarageBtn(d.overview.reg);
+}
+
+// ── Garage (localStorage) ──
+function getGarage() { try { return JSON.parse(localStorage.getItem('regcheck_garage') || '[]'); } catch { return []; } }
+function saveGarage(g) { localStorage.setItem('regcheck_garage', JSON.stringify(g)); updateGarageUI(); }
+
+function toggleGarage(vrm, label, score) {
+  const garage = getGarage();
+  const cleanVrm = vrm.replace(/\s/g, '');
+  const idx = garage.findIndex(i => i.vrm.replace(/\s/g,'') === cleanVrm);
+  if (idx >= 0) { garage.splice(idx, 1); } else { garage.push({ vrm, label, score }); }
+  saveGarage(garage);
+  updateGarageUI();
+  updateGarageBtn(vrm);
+}
+
+function updateGarageBtn(vrm) {
+  const btn = document.getElementById('garageBtn');
+  if (!btn) return;
+  const garage = getGarage();
+  const cleanVrm = vrm.replace(/\s/g, '');
+  const saved = garage.some(i => i.vrm.replace(/\s/g,'') === cleanVrm);
+  btn.textContent = saved ? '★ Saved' : '☆ Save to Garage';
+  btn.className = 'garage-btn' + (saved ? ' saved' : '');
+}
+
+function updateGarageUI() {
+  const garage = getGarage();
+  const list = document.getElementById('garageList');
+  const count = document.getElementById('garageCount');
+  const empty = document.getElementById('garageEmpty');
+  const panel = document.getElementById('garagePanel');
+  if (!list) return;
+
+  if (garage.length === 0) {
+    list.innerHTML = '';
+    if (count) count.textContent = '';
+    if (empty) empty.style.display = 'block';
+    if (panel) panel.style.display = 'none';
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+  if (count) count.textContent = `(${garage.length} vehicle${garage.length !== 1 ? 's' : ''})`;
+  if (panel) panel.style.display = 'block';
+
+  list.innerHTML = garage.map(item => `
+    <div class="garage-item" onclick="quickLookup('${item.vrm}')">
+      ${item.label}
+      <span style="color:${item.score >= 70 ? '#22c55e' : item.score >= 40 ? '#f59e0b' : '#ef4444'};font-size:0.75rem">${item.score}/100</span>
+      <span class="remove" onclick="event.stopPropagation(); removeFromGarage('${item.vrm}')">✕</span>
+    </div>
+  `).join('');
+}
+
+function removeFromGarage(vrm) {
+  const garage = getGarage();
+  const cleanVrm = vrm.replace(/\s/g, '');
+  saveGarage(garage.filter(item => item.vrm.replace(/\s/g,'') !== cleanVrm));
+  updateGarageUI();
+  updateGarageBtn(vrm);
+}
+
+// ── Init ──
+updateGarageUI();
+</script>
+</body>
+</html>

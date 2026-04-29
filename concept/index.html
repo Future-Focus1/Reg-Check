@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RegCheck — Smart Vehicle History</title>
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #141b22;
+    --surface2: #1c2430;
+    --border: #252e3a;
+    --text: #e2e6ec;
+    --text2: #8b95a5;
+    --accent: #3b82f6;
+    --accent2: #2563eb;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 40px;
+    transition: all 0.5s ease;
+  }
+  .hero.compact { padding: 30px 20px 20px; }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--text2);
+    font-size: 1.1rem;
+    margin-top: 8px;
+  }
+
+  /* ── Search ── */
+  .search-container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .search-box {
+    display: flex;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+  }
+  .search-box input {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 16px 20px;
+    font-size: 1.4rem;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    outline: none;
+    min-width: 0;
+  }
+  .search-box input::placeholder {
+    color: var(--text2);
+    letter-spacing: 0;
+    text-transform: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 1rem;
+  }
+  .search-box button {
+    background: var(--gradient);
+    border: none;
+    color: white;
+    padding: 16px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .search-box button:hover { opacity: 0.9; }
+  .search-box button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .quick-lookups {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .quick-lookups button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .quick-lookups button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Loading ── */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: var(--text2);
+  }
+  .loading.active { display: block; }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Results ── */
+  .results {
+    display: none;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    animation: fadeUp 0.4s ease;
+  }
+  .results.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Risk Banner ── */
+  .risk-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .risk-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+  .risk-card .icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  .risk-card .label {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .risk-card .status {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .risk-card.clear { border-left: 4px solid var(--green); }
+  .risk-card.clear .status { color: var(--green); }
+  .risk-card.warn { border-left: 4px solid var(--amber); }
+  .risk-card.warn .status { color: var(--amber); }
+  .risk-card.danger { border-left: 4px solid var(--red); }
+  .risk-card.danger .status { color: var(--red); }
+
+  /* ── Score ── */
+  .score-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .score-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: conic-gradient(var(--green) 0deg 288deg, var(--surface2) 288deg 360deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .score-inner {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--green);
+  }
+  .score-text h3 {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+  .score-text p {
+    color: var(--text2);
+    font-size: 0.95rem;
+  }
+
+  /* ── Detail Sections ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header h3 {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-header .chevron {
+    transition: transform 0.3s;
+    color: var(--text2);
+  }
+  .section.open .section-header .chevron { transform: rotate(180deg); }
+  .section-body {
+    display: none;
+    padding: 0 20px 20px;
+  }
+  .section.open .section-body { display: block; }
+
+  /* ── Data Grid ── */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .data-item {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+  }
+  .data-item .dl {
+    font-size: 0.78rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .data-item .dv {
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  /* ── MOT Timeline ── */
+  .mot-timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .mot-timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+  .mot-entry {
+    position: relative;
+    padding: 12px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .mot-entry::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 18px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid var(--surface);
+  }
+  .mot-entry.fail::before { background: var(--red); }
+  .mot-date {
+    font-size: 0.85rem;
+    color: var(--text2);
+    min-width: 90px;
+  }
+  .mot-result {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .mot-mileage {
+    font-size: 0.85rem;
+    color: var(--text2);
+  }
+  .mot-advisory {
+    font-size: 0.82rem;
+    color: var(--amber);
+    margin-top: 2px;
+  }
+
+  /* ── ULEZ ── */
+  .ulez-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .ulez-banner.compliant { border-left: 4px solid var(--green); }
+  .ulez-banner.noncompliant { border-left: 4px solid var(--red); }
+  .ulez-icon { font-size: 2rem; flex-shrink: 0; }
+  .ulez-info h4 { font-size: 1rem; margin-bottom: 4px; }
+  .ulez-info p { font-size: 0.88rem; color: var(--text2); }
+  .ulez-charge { font-size: 0.82rem; color: var(--amber); margin-top: 4px; }
+
+  /* ── Depreciation ── */
+  .depreciation-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 160px;
+    padding: 10px 0;
+  }
+  .dep-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .dep-bar {
+    width: 100%;
+    max-width: 60px;
+    background: var(--gradient);
+    border-radius: 6px 6px 0 0;
+    transition: height 0.5s ease;
+    min-height: 4px;
+  }
+  .dep-bar.future { opacity: 0.5; }
+  .dep-label { font-size: 0.7rem; color: var(--text2); margin-top: 6px; text-align: center; }
+  .dep-value { font-size: 0.75rem; font-weight: 600; margin-top: 2px; text-align: center; }
+  .dep-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .dep-stat {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+  }
+  .dep-stat .dl { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; }
+  .dep-stat .dv { font-size: 1.2rem; font-weight: 700; margin-top: 2px; }
+  .dep-stat .dv.loss { color: var(--red); }
+
+  /* ── Deal Verdict ── */
+  .verdict-banner {
+    padding: 24px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .verdict-banner.recommend { background: linear-gradient(135deg, #166534, #1a3a2a); border: 1px solid var(--green); }
+  .verdict-banner.caution { background: linear-gradient(135deg, #5c3d0e, #3a2a10); border: 1px solid var(--amber); }
+  .verdict-banner.risky { background: linear-gradient(135deg, #5c1a1a, #3a1010); border: 1px solid var(--red); }
+  .verdict-banner.avoid { background: linear-gradient(135deg, #4a1010, #2a0808); border: 1px solid #7f1d1d); }
+  .verdict-banner.insufficient_data { background: var(--surface); border: 1px solid var(--border); }
+  .verdict-icon { font-size: 3rem; margin-bottom: 8px; }
+  .verdict-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+  .verdict-summary { color: var(--text2); font-size: 0.95rem; margin-bottom: 12px; }
+  .verdict-recommendation { font-size: 0.9rem; font-style: italic; color: var(--text2); margin-bottom: 12px; }
+  .verdict-flags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; }
+  .verdict-flag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+  }
+  .verdict-positive {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    background: rgba(34,197,94,0.15);
+    color: var(--green);
+  }
+
+  /* ── Garage ── */
+  .garage-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .garage-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .garage-btn.saved { border-color: var(--green); color: var(--green); }
+  .garage-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .garage-panel.active { display: block; }
+  .garage-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .garage-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+  }
+  .garage-item:hover { border-color: var(--accent); }
+  .garage-item .remove { margin-left: 8px; color: var(--red); cursor: pointer; font-size: 0.8rem; }
+
+  /* ── Valuation ── */
+  .valuation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .val-card {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    text-align: center;
+  }
+  .val-card .val-label {
+    font-size: 0.82rem;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .val-card .val-amount {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  .val-card .val-range {
+    font-size: 0.82rem;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .val-card.featured {
+    background: var(--gradient);
+  }
+  .val-card.featured .val-label,
+  .val-card.featured .val-range { color: rgba(255,255,255,0.75); }
+  .val-card.featured .val-amount { color: white; }
+
+  /* ── Footer ── */
+  .app-footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text2);
+    font-size: 0.85rem;
+  }
+  .error-msg {
+    text-align: center;
+    color: var(--red);
+    padding: 20px;
+    display: none;
+  }
+  .error-msg.active { display: block; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .search-box { flex-direction: column; }
+    .search-box button { border-radius: 0; }
+    .score-section { flex-direction: column; text-align: center; }
+    .risk-banner { grid-template-columns: repeat(2, 1fr); }
+    .data-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero" id="hero">
+  <h1>RegCheck</h1>
+  <p>Smart vehicle history. No clutter, just what matters.</p>
+</div>
+
+<!-- Search -->
+<div class="search-container">
+  <div class="search-box">
+    <input type="text" id="vrmInput" placeholder="Enter registration number..." maxlength="8" autocomplete="off">
+    <button id="searchBtn" onclick="doLookup()">Check Vehicle</button>
+  </div>
+  <div class="quick-lookups">
+    <button onclick="quickLookup('AB12CDE')">AB12 CDE</button>
+    <button onclick="quickLookup('OY15RXF')">OY15 RXF</button>
+    <button onclick="quickLookup('LG60KXZ')">LG60 KXZ</button>
+    <span style="color:var(--text2);font-size:0.8rem;margin-left:4px">or type any UK reg</span>
+  </div>
+</div>
+
+<!-- My Garage -->
+<div class="results" id="garagePanel" style="max-width:980px;margin:0 auto;padding:0 20px 20px;display:none;">
+  <div class="garage-panel active" style="margin-bottom:0">
+    <h4 style="margin-bottom:10px;display:flex;align-items:center;gap:8px">🏠 My Garage <span id="garageCount" style="color:var(--text2);font-size:0.85rem;font-weight:400"></span></h4>
+    <div class="garage-list" id="garageList"></div>
+    <p id="garageEmpty" style="color:var(--text2);font-size:0.85rem">Search for a vehicle and click "Save to Garage" to start comparing cars side-by-side.</p>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>Checking DVLA, finance records, write-off register, police database...</p>
+</div>
+
+<!-- Error -->
+<div class="error-msg" id="error"></div>
+
+<!-- Results -->
+<div class="results" id="results"></div>
+
+<div class="app-footer">
+  RegCheck Concept &copy; 2026 &mdash; Prototype
+</div>
+
+<script>
+// ── API Backend ──
+const API_BASE = '/api';
+
+// ── Quick Lookup ──
+function quickLookup(vrm) {
+  document.getElementById('vrmInput').value = vrm;
+  doLookup();
+}
+
+// ── Format helpers ──
+function fmtCurrency(n) { return '£' + n.toLocaleString(); }
+
+// ── API Status Badge ──
+let apiMode = 'checking...';
+fetch(API_BASE.replace('/api','/health'))
+  .then(r => r.json())
+  .then(h => {
+    apiMode = h.apis.mode;
+    if (h.apis.dvla === 'live') apiMode = 'LIVE DVLA + DVSA';
+    else if (h.apis.dvsa === 'live') apiMode = 'LIVE DVSA';
+    else apiMode = 'MOCK DATA';
+  })
+  .catch(() => { apiMode = 'OFFLINE'; });
+
+// ── Main lookup ──
+function doLookup() {
+  const input = document.getElementById('vrmInput');
+  const vrm = input.value.replace(/\s/g, '').toUpperCase();
+
+  if (vrm.length < 2) { input.focus(); return; }
+
+  const hero = document.getElementById('hero');
+  const loading = document.getElementById('loading');
+  const results = document.getElementById('results');
+  const error = document.getElementById('error');
+  const searchBtn = document.getElementById('searchBtn');
+
+  hero.classList.add('compact');
+  results.classList.remove('active');
+  error.classList.remove('active');
+  loading.classList.add('active');
+  searchBtn.disabled = true;
+
+  // Call backend API
+  fetch(`${API_BASE}/lookup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vrm: vrm })
+  })
+  .then(r => {
+    if (!r.ok) throw new Error(`Server error (${r.status})`);
+    return r.json();
+  })
+  .then(data => {
+    loading.classList.remove('active');
+    searchBtn.disabled = false;
+    renderResults(data);
+    results.classList.add('active');
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  })
+  .catch(err => {
+    loading.classList.remove('active');
+    searchBtn.disabled = false;
+    error.textContent = `Unable to look up vehicle. ${err.message}. Is the backend running?`;
+    error.classList.add('active');
+  });
+}
+
+// ── Render ──
+function renderResults(d) {
+  const r = d.risks;
+  const riskIcons = {
+    clear: '✅',
+    warn: '⚠️',
+    danger: '🔴',
+  };
+
+  const riskCards = Object.entries(r).map(([key, val]) => {
+    const titles = {
+      finance: 'Outstanding Finance',
+      stolen: 'Stolen Check',
+      writeoff: 'Insurance Write-off',
+      scrapped: 'Scrapped',
+      imported: 'Import/Export',
+      mileage: 'Mileage Check',
+    };
+    return `
+      <div class="risk-card ${val.status}">
+        <div class="icon">${riskIcons[val.status]}</div>
+        <div class="label">${titles[key]}</div>
+        <div class="status">${val.text}</div>
+      </div>
+    `;
+  }).join('');
+
+  const scoreColor = d.score >= 70 ? 'var(--green)' : d.score >= 40 ? 'var(--amber)' : 'var(--red)';
+  const scoreDegree = (d.score / 100) * 360;
+
+  const o = d.overview;
+  const vehicleGrid = `
+    <div class="data-item"><div class="dl">Registration</div><div class="dv">${o.reg}</div></div>
+    <div class="data-item"><div class="dl">Make & Model</div><div class="dv">${o.make} ${o.model}</div></div>
+    <div class="data-item"><div class="dl">Year</div><div class="dv">${o.year}</div></div>
+    <div class="data-item"><div class="dl">Colour</div><div class="dv">${o.colour}</div></div>
+    <div class="data-item"><div class="dl">Fuel Type</div><div class="dv">${o.fuel}</div></div>
+    <div class="data-item"><div class="dl">Engine</div><div class="dv">${o.engine}</div></div>
+    <div class="data-item"><div class="dl">Transmission</div><div class="dv">${o.transmission}</div></div>
+    <div class="data-item"><div class="dl">Body Style</div><div class="dv">${o.body}</div></div>
+    <div class="data-item"><div class="dl">CO2 Emissions</div><div class="dv">${o.co2} g/km</div></div>
+    <div class="data-item"><div class="dl">VED (Road Tax)</div><div class="dv">${o.tax}</div></div>
+    <div class="data-item"><div class="dl">Tax Status</div><div class="dv">${o.taxStatus} (due ${o.taxDue})</div></div>
+    <div class="data-item"><div class="dl">MOT Status</div><div class="dv">${o.motStatus} (expires ${o.motExpiry})</div></div>
+    <div class="data-item"><div class="dl">Last V5C Issued</div><div class="dv">${o.v5cIssued}</div></div>
+    <div class="data-item"><div class="dl">Previous Keepers</div><div class="dv">${o.previousKeepers}</div></div>
+    <div class="data-item"><div class="dl">Euro Emissions</div><div class="dv">${o.euroStatus}</div></div>
+  `;
+
+  const motTimeline = d.motHistory.map((m, i) => `
+    <div class="mot-entry ${m.result === 'FAIL' ? 'fail' : ''}">
+      <div class="mot-date">${m.date}</div>
+      <div>
+        <div class="mot-result">${m.result === 'PASS' ? '✅' : '❌'} ${m.result}</div>
+        <div class="mot-mileage">${(m.mileage || 0).toLocaleString()} miles</div>
+        ${(m.advisories || []).map(a => `<div class="mot-advisory">⚠ ${a}</div>`).join('')}
+        ${(m.defects || []).map(d => `<div class="mot-advisory" style="color:var(--red)">🔧 ${d}</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const v = d.valuation;
+  const valCards = v ? `
+    <div class="val-card">
+      <div class="val-label">Trade-In</div>
+      <div class="val-amount">${fmtCurrency(v.tradeIn.min)}</div>
+      <div class="val-range">${fmtCurrency(v.tradeIn.min)} – ${fmtCurrency(v.tradeIn.max)}</div>
+    </div>
+    <div class="val-card featured">
+      <div class="val-label">Private Sale</div>
+      <div class="val-amount">${fmtCurrency(Math.round((v.privateSale.min + v.privateSale.max) / 2))}</div>
+      <div class="val-range">${fmtCurrency(v.privateSale.min)} – ${fmtCurrency(v.privateSale.max)}</div>
+    </div>
+    <div class="val-card">
+      <div class="val-label">Dealer Forecourt</div>
+      <div class="val-amount">${fmtCurrency(Math.round((v.dealerForecourt.min + v.dealerForecourt.max) / 2))}</div>
+      <div class="val-range">${fmtCurrency(v.dealerForecourt.min)} – ${fmtCurrency(v.dealerForecourt.max)}</div>
+    </div>
+  ` : `<p style="text-align:center;color:var(--text2);padding:20px">Valuation data requires commercial API (UKVD / HPI)</p>`;
+
+  const rc = d.runningCosts;
+  const costsGrid = rc ? `
+    <div class="data-item"><div class="dl">Fuel</div><div class="dv">${rc.fuel}</div></div>
+    <div class="data-item"><div class="dl">Insurance</div><div class="dv">${rc.insurance}</div></div>
+    <div class="data-item"><div class="dl">Road Tax</div><div class="dv">${rc.tax}</div></div>
+    <div class="data-item"><div class="dl">Est. Maintenance</div><div class="dv">${rc.maintenance}</div></div>
+    <div class="data-item"><div class="dl">Annual Total</div><div class="dv" style="color:var(--accent)">${rc.total}</div></div>
+  ` : `<p style="text-align:center;color:var(--text2);padding:20px">Running cost estimates require commercial API</p>`;
+
+  const marketDaysText = d.marketDays
+    ? `<p style="font-size:0.85rem;margin-top:4px;color:var(--text2)">Avg. ${d.marketDays} days on market for similar vehicles</p>`
+    : '';
+
+  const apiBadge = d._meta
+    ? `<p style="font-size:0.75rem;margin-top:2px;color:var(--text2)">Data: DVLA=${d._meta.dvla} | DVSA=${d._meta.dvsa}${d._mock ? ' | Mock Mode' : ''}</p>`
+    : '';
+
+  // Build ULEZ section
+  const uz = d.ulez;
+  const ulezSection = uz ? `
+    <div class="ulez-banner ${uz.londonULEZ.compliant ? 'compliant' : 'noncompliant'}">
+      <div class="ulez-icon">${uz.londonULEZ.compliant ? '🏙️' : '🏭'}</div>
+      <div class="ulez-info">
+        <h4>${uz.summary}</h4>
+        <p>London ULEZ: ${uz.londonULEZ.detail}</p>
+        ${!uz.londonULEZ.compliant ? `<p class="ulez-charge">Daily charge: ${uz.londonULEZ.charge}. Annual cost if driven in zone daily: ${fmtCurrency(Math.round(parseFloat(uz.londonULEZ.charge) * 365))}</p>` : ''}
+      </div>
+    </div>
+  ` : '';
+
+  // Build Deal Verdict section
+  const dv = d.dealVerdict;
+  const dealSection = dv ? `
+    <div class="verdict-banner ${dv.verdict}">
+      <div class="verdict-icon">${dv.icon}</div>
+      <div class="verdict-title">Our Verdict: ${dv.verdict === 'recommend' ? 'Good Buy' : dv.verdict === 'caution' ? 'Proceed with Caution' : dv.verdict === 'risky' ? 'High Risk' : dv.verdict === 'avoid' ? 'Avoid' : 'Not Enough Data'}</div>
+      <div class="verdict-summary">${dv.summary}</div>
+      <div class="verdict-recommendation">${dv.recommendation || ''}</div>
+      <div class="verdict-flags">
+        ${(dv.flags || []).map(f => `<span class="verdict-flag">❌ ${f}</span>`).join('')}
+        ${(dv.positives || []).map(p => `<span class="verdict-positive">✅ ${p}</span>`).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  // Build Depreciation section
+  const dep = d.depreciation;
+  const highestValue = dep ? Math.max(...dep.projections.map(p => p.value)) : 1;
+  const depSection = dep ? `
+    <div class="depreciation-chart">
+      ${dep.projections.map((p, i) => `
+        <div class="dep-bar-wrap">
+          <div class="dep-bar ${i > 0 ? 'future' : ''}" style="height:${(p.value / highestValue) * 100}%"></div>
+          <div class="dep-label">${p.year}${i === 0 ? ' (now)' : ''}</div>
+          <div class="dep-value">${p.value > 0 ? fmtCurrency(p.value) : '--'}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="dep-stats">
+      <div class="dep-stat"><div class="dl">Current Value</div><div class="dv">${fmtCurrency(dep.currentValue)}</div></div>
+      <div class="dep-stat"><div class="dl">5-Year Value</div><div class="dv">${fmtCurrency(dep.fiveYearValue)}</div></div>
+      <div class="dep-stat"><div class="dl">Total Depreciation</div><div class="dv loss">-${fmtCurrency(dep.totalLoss)} (${dep.percentLoss}%)</div></div>
+      <div class="dep-stat"><div class="dl">Annual Cost</div><div class="dv loss">${fmtCurrency(dep.annualLoss)}/yr</div></div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--text2);margin-top:8px;text-align:center">${dep.note}</p>
+  ` : '';
+
+  // Build Insurance section
+  const ins = d.insurance;
+  const insSection = ins ? `
+    <div class="data-item"><div class="dl">Insurance Group</div><div class="dv">${ins.group}/50 (${ins.band} risk)</div></div>
+    <div class="data-item"><div class="dl">Est. Annual Premium</div><div class="dv">${ins.estimatedPremium}</div></div>
+    <div class="data-item" style="grid-column:1/-1"><div class="dl" style="font-size:0.75rem;color:var(--text2);text-transform:none">${ins.note}</div></div>
+  ` : '';
+
+  // Current VRM for garage
+  currentVrm = d.overview.reg;
+  currentVrmData = d;
+
+  document.getElementById('results').innerHTML = `
+    <!-- Save to Garage -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;justify-content:flex-end">
+      <button class="garage-btn ${isInGarage(currentVrm) ? 'saved' : ''}" id="garageBtn" onclick="toggleGarage('${currentVrm}')">
+        ${isInGarage(currentVrm) ? '★ Saved' : '☆ Save to Garage'}
+      </button>
+    </div>
+
+    <!-- Risk Banner -->
+    <div class="risk-banner">${riskCards}</div>
+
+    ${dealSection}
+    ${ulezSection}
+
+    <!-- Score -->
+    <div class="score-section">
+      <div class="score-circle" style="background: conic-gradient(${scoreColor} 0deg ${scoreDegree}deg, var(--surface2) ${scoreDegree}deg 360deg);">
+        <div class="score-inner" style="color:${scoreColor}">${d.score}</div>
+      </div>
+      <div class="score-text">
+        <h3>BuyScore&trade; ${d.score}/100</h3>
+        <p>${d.scoreText}</p>
+        ${marketDaysText}
+        ${apiBadge}
+      </div>
+    </div>
+
+    <!-- Vehicle Details -->
+    <div class="section open">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>🚗 Vehicle Details</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="section-body">
+        <div class="data-grid">
+          ${vehicleGrid}
+          ${insSection}
+        </div>
+      </div>
+    </div>
+
+    <!-- Depreciation -->
+    <div class="section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>📉 5-Year Depreciation Forecast</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="section-body">${depSection}</div>
+    </div>
+
+    <!-- MOT History -->
+    <div class="section open">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>🔧 MOT History</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="section-body">
+        <div class="mot-timeline">${motTimeline}</div>
+      </div>
+    </div>
+
+    <!-- Valuation -->
+    <div class="section open">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>💰 Market Valuation</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="section-body">
+        <div class="valuation-grid">${valCards}</div>
+      </div>
+    </div>
+
+    <!-- Running Costs -->
+    <div class="section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>📊 Estimated Running Costs</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="section-body">
+        <div class="data-grid">${costsGrid}</div>
+      </div>
+    </div>
+  `;
+
+  // Show garage panel
+  document.getElementById('garagePanel').style.display = 'block';
+  updateGarageUI();
+}
+
+// ── Enter key ──
+document.getElementById('vrmInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') doLookup();
+});
+
+// ── Garage (localStorage) ──
+let currentVrm = '';
+let currentVrmData = null;
+
+function getGarage() {
+  try { return JSON.parse(localStorage.getItem('regcheck_garage') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveGarage(items) {
+  localStorage.setItem('regcheck_garage', JSON.stringify(items));
+}
+
+function isInGarage(vrm) {
+  return getGarage().some(item => item.vrm.replace(/\s/g,'') === vrm.replace(/\s/g,''));
+}
+
+function toggleGarage(vrm) {
+  const garage = getGarage();
+  const cleanVrm = vrm.replace(/\s/g, '');
+  const idx = garage.findIndex(item => item.vrm.replace(/\s/g,'') === cleanVrm);
+
+  if (idx >= 0) {
+    garage.splice(idx, 1);
+  } else if (currentVrmData) {
+    garage.push({
+      vrm: cleanVrm,
+      label: `${cleanVrm} (${currentVrmData.overview.make} ${currentVrmData.overview.model})`,
+      score: currentVrmData.score || 0,
+    });
+    if (garage.length > 10) garage.shift(); // Max 10 cars
+  }
+
+  saveGarage(garage);
+  updateGarageUI();
+
+  // Update button
+  const btn = document.getElementById('garageBtn');
+  if (btn) {
+    btn.textContent = isInGarage(vrm) ? '★ Saved' : '☆ Save to Garage';
+    btn.className = 'garage-btn' + (isInGarage(vrm) ? ' saved' : '');
+  }
+}
+
+function updateGarageUI() {
+  const garage = getGarage();
+  const list = document.getElementById('garageList');
+  const count = document.getElementById('garageCount');
+  const empty = document.getElementById('garageEmpty');
+
+  if (!list) return;
+
+  if (garage.length === 0) {
+    list.innerHTML = '';
+    if (count) count.textContent = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+  if (count) count.textContent = `(${garage.length} vehicle${garage.length !== 1 ? 's' : ''})`;
+
+  list.innerHTML = garage.map(item => `
+    <div class="garage-item" onclick="quickLookup('${item.vrm}')">
+      ${item.label}
+      <span style="color:${item.score >= 70 ? 'var(--green)' : item.score >= 40 ? 'var(--amber)' : 'var(--red)'};font-size:0.75rem">${item.score}/100</span>
+      <span class="remove" onclick="event.stopPropagation(); removeFromGarage('${item.vrm}')">✕</span>
+    </div>
+  `).join('');
+}
+
+function removeFromGarage(vrm) {
+  const garage = getGarage();
+  const cleanVrm = vrm.replace(/\s/g, '');
+  saveGarage(garage.filter(item => item.vrm.replace(/\s/g,'') !== cleanVrm));
+  updateGarageUI();
+  const btn = document.getElementById('garageBtn');
+  if (btn) {
+    btn.textContent = '☆ Save to Garage';
+    btn.className = 'garage-btn';
+  }
+}
+
+// Initial garage load
+updateGarageUI();
+if (getGarage().length > 0) {
+  document.getElementById('garagePanel').style.display = 'block';
+}
+</script>
+</body>
+</html>
