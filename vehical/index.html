@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehical — Your car, covered</title>
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #101720;
+    --surface2: #192231;
+    --border: #253040;
+    --text: #e2e8f0;
+    --text2: #7e93b0;
+    --accent: #3b82f6;
+    --accent2: #6366f1;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ─── Nav ─── */
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; max-width: 1100px; margin: 0 auto;
+  }
+  .nav h1 { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+  .nav h1 span {
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-weight: 800;
+  }
+  .nav-links { display: flex; gap: 20px; font-size: 0.85rem; }
+  .nav-links a { color: var(--text2); text-decoration: none; }
+  .nav-links a:hover { color: var(--text); }
+  .nav .cta-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; padding: 8px 18px; border-radius: 20px;
+    font-size: 0.82rem; font-weight: 600; text-decoration: none;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    text-align: center; padding: 60px 20px 40px;
+    max-width: 700px; margin: 0 auto;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 800;
+    background: linear-gradient(135deg, var(--text), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.15;
+  }
+  .hero p { color: var(--text2); font-size: 1.1rem; margin-top: 12px; max-width: 500px; margin-inline: auto; }
+  .hero .search-demo {
+    margin-top: 24px; display: flex; max-width: 440px; margin-inline: auto;
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .hero .search-demo input {
+    flex: 1; background: none; border: none; padding: 14px 18px;
+    font-size: 1.1rem; font-family: 'Courier New', monospace;
+    color: var(--text); letter-spacing: 2px; text-transform: uppercase;
+    outline: none;
+  }
+  .hero .search-demo button {
+    background: var(--accent); border: none; color: white;
+    padding: 14px 24px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ─── Cards ─── */
+  .section { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+  .section-title { text-align: center; font-size: 1.6rem; font-weight: 700; margin-bottom: 30px; }
+  .section-title span { color: var(--accent); }
+  .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .service-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .service-card:hover { border-color: var(--accent); }
+  .service-card .icon { font-size: 2rem; margin-bottom: 12px; }
+  .service-card h3 { font-size: 1.15rem; margin-bottom: 6px; }
+  .service-card p { color: var(--text2); font-size: 0.9rem; margin-bottom: 12px; }
+  .service-card .bullets { list-style: none; }
+  .service-card .bullets li {
+    padding: 4px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+  }
+  .service-card .bullets li::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+  /* ─── Demo Quick View ─── */
+  .demo-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px; margin-top: 30px;
+  }
+  .demo-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 18px;
+  }
+  .demo-panel .title { font-size: 0.82rem; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .demo-panel .big { font-size: 1.8rem; font-weight: 800; }
+  .demo-panel .big.score { color: var(--green); }
+  .demo-panel .row { display: flex; gap: 12px; margin-top: 8px; }
+  .demo-panel .stat { flex: 1; }
+  .demo-panel .stat .l { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; }
+  .demo-panel .stat .v { font-size: 0.95rem; font-weight: 600; }
+  .timereminder {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; background: var(--surface2); border-radius: var(--radius-sm);
+    margin-top: 8px; font-size: 0.85rem;
+  }
+  .timereminder .badge {
+    background: var(--accent); color: white; padding: 3px 10px;
+    border-radius: 12px; font-size: 0.72rem; font-weight: 600;
+  }
+
+  /* ─── Pricing ─── */
+  .pricing-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px; margin-top: 20px;
+  }
+  .pricing-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; text-align: center;
+    position: relative;
+  }
+  .pricing-card.popular {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(59,130,246,0.06), var(--surface));
+  }
+  .pricing-card .popular-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: white; padding: 4px 16px;
+    border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+  }
+  .pricing-card .plan-name { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+  .pricing-card .plan-desc { color: var(--text2); font-size: 0.82rem; margin-bottom: 16px; }
+  .pricing-card .price { font-size: 2.2rem; font-weight: 800; margin-bottom: 4px; }
+  .pricing-card .price small { font-size: 0.85rem; font-weight: 400; color: var(--text2); }
+  .pricing-card .perks { text-align: left; margin: 16px 0; }
+  .pricing-card .perk { padding: 5px 0; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+  .pricing-card .perk .check { color: var(--green); font-weight: 700; }
+  .pricing-card .perk.muted { color: var(--text2); opacity: 0.5; }
+  .pricing-card .perk.muted .check { color: var(--text2); }
+  .pricing-card .btn {
+    width: 100%; padding: 12px; border: none; border-radius: var(--radius-sm);
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); transition: all 0.2s;
+  }
+  .pricing-card .btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; border: none;
+  }
+  .pricing-card .btn:hover { opacity: 0.9; }
+
+  /* ─── Garage Section ─── */
+  .garage-section {
+    max-width: 700px; margin: 0 auto; padding: 40px 20px; text-align: center;
+  }
+  .garage-section h2 { font-size: 1.4rem; margin-bottom: 6px; }
+  .garage-section p { color: var(--text2); margin-bottom: 20px; }
+  .garage-stats {
+    display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .garage-stat { text-align: center; }
+  .garage-stat .num { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+  .garage-stat .lbl { font-size: 0.82rem; color: var(--text2); }
+
+  .footer { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 0.8rem; border-top: 1px solid var(--border); }
+  .footer strong { color: var(--text); }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .hero h1 { font-size: 1.8rem; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .demo-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h1>⚡ <span>Vehical</span></h1>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#garage">For Garages</a>
+  </div>
+  <a href="#pricing" class="cta-btn">Get Started</a>
+</div>
+
+<div class="hero">
+  <h1>Your car, fully covered</h1>
+  <p>Vehicle history checks, MOT reminders, and true ownership costs — all in one place.</p>
+  <div class="search-demo">
+    <input type="text" placeholder="Enter reg..." maxlength="8" value="AB12 CDE" disabled>
+    <button disabled>Check</button>
+  </div>
+  <p style="color:var(--text2);font-size:0.85rem;margin-top:10px">Try it — open the demo below</p>
+</div>
+
+<!-- Services -->
+<div class="section" id="services">
+  <div class="section-title">Everything your <span>car</span> needs</div>
+  <div class="service-grid">
+    <div class="service-card">
+      <div class="icon">🔍</div>
+      <h3>Vehicle History Check</h3>
+      <p>Instant DVLA data, full MOT history, valuation, ULEZ compliance, insurance group, deal verdict.</p>
+      <ul class="bullets">
+        <li>DVLA make/model/year/colour/fuel</li>
+        <li>Full MOT history with advisories</li>
+        <li>Private + dealer + part-ex valuation</li>
+        <li>ULEZ & CAZ compliance check</li>
+        <li>5-year depreciation projection</li>
+        <li>BuyScore™ with deal verdict</li>
+      </ul>
+    </div>
+    <div class="service-card">
+      <div class="icon">📱</div>
+      <h3>MOT Reminders</h3>
+      <p>Never miss your MOT again. SMS reminders at the right time, with tap-to-book at your local garage.</p>
+      <ul class="bullets">
+        <li>4 SMS reminders (30/14/7/1 day)</li>
+        <li>Tax due alerts included</li>
+        <li>Tap-to-book at partner garages</li>
+        <li>Multi-vehicle support</li>
+        <li>Cancel anytime</li>
+      </ul>
+    </div>
+    <div class="service-card">
+      <div class="icon">📊</div>
+      <h3>Cost of Ownership</h3>
+      <p>Know exactly what a car costs you — not just the price tag. Depreciation, fuel, tax, insurance, maintenance.</p>
+      <ul class="bullets">
+        <li>5-year cost projection by year</li>
+        <li>Depreciation curve with chart</li>
+        <li>Fuel cost based on MPG/mileage</li>
+        <li>Insurance group estimator</li>
+        <li>Annual running cost total</li>
+        <li>Cost-per-mile breakdown</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Live Demo -->
+<div class="section">
+  <div class="section-title">See it in <span>action</span></div>
+  <p style="text-align:center;color:var(--text2);margin-bottom:20px">Mock data showing what you get when you enter a reg</p>
+
+  <div class="demo-row">
+    <!-- Check -->
+    <div class="demo-panel">
+      <div class="title">🔍 Vehicle Check</div>
+      <div class="big score">82</div>
+      <div style="font-weight:600;margin:2px 0 6px">Volkswagen Golf 2019 · Black</div>
+      <div class="row">
+        <div class="stat"><div class="l">Valuation</div><div class="v">£11,250</div></div>
+        <div class="stat"><div class="l">ULEZ</div><div class="v" style="color:var(--green)">✅ Compliant</div></div>
+        <div class="stat"><div class="l">Insurance</div><div class="v">Group 22</div></div>
+      </div>
+      <div class="row">
+        <div class="stat"><div class="l">MOT Status</div><div class="v" style="color:var(--green)">Valid</div></div>
+        <div class="stat"><div class="l">Tax</div><div class="v">£180/yr</div></div>
+      </div>
+    </div>
+
+    <!-- Reminder -->
+    <div class="demo-panel">
+      <div class="title">📱 MOT Reminders</div>
+      <div style="font-weight:600;margin-bottom:8px">AB12 CDE · Volkswagen Golf</div>
+      <div class="timereminder">
+        <span>📅</span>
+        <span style="flex:1">MOT expires <strong>12 May 2026</strong></span>
+        <span class="badge">Active</span>
+      </div>
+      <div class="timereminder" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)">
+        <span>🔔</span>
+        <span style="font-size:0.8rem">Next reminder: 5 May (7 days before)</span>
+      </div>
+      <div style="margin-top:8px;font-size:0.8rem;color:var(--text2)">
+        <div>📱 30 days · 14 days · <strong>7 days</strong> · 1 day</div>
+      </div>
+    </div>
+
+    <!-- Ownership Cost -->
+    <div class="demo-panel">
+      <div class="title">📊 5-Year Ownership Cost</div>
+      <div class="big" style="color:var(--amber)">£38,240</div>
+      <div style="color:var(--text2);font-size:0.85rem;margin-bottom:8px">over 5 years · £637/month</div>
+      <div class="row">
+        <div class="stat"><div class="l">Depreciation</div><div class="v">-£8,750</div></div>
+        <div class="stat"><div class="l">Fuel</div><div class="v">£12,500</div></div>
+      </div>
+      <div class="row">
+        <div class="stat"><div class="l">Insurance</div><div class="v">£5,400</div></div>
+        <div class="stat"><div class="l">Tax + Service</div><div class="v">£4,100</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pricing -->
+<div class="section" id="pricing">
+  <div class="section-title">Simple <span>pricing</span></div>
+  <p style="text-align:center;color:var(--text2);margin-bottom:10px">No hidden fees. Cancel anytime.</p>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">One Check</div>
+      <div class="plan-desc">Single vehicle history report</div>
+      <div class="price">£1.99</div>
+      <div class="perks">
+        <div class="perk"><span class="check">✓</span> Full DVLA vehicle data</div>
+        <div class="perk"><span class="check">✓</span> MOT history + advisories</div>
+        <div class="perk"><span class="check">✓</span> Valuation (private/dealer/PX)</div>
+        <div class="perk"><span class="check">✓</span> ULEZ + CAZ compliance</div>
+        <div class="perk"><span class="check">✓</span> Deal verdict + BuyScore</div>
+        <div class="perk muted"><span class="check">✓</span> MOT reminders</div>
+        <div class="perk muted"><span class="check">✓</span> Ownership cost calculator</div>
+        <div class="perk muted"><span class="check">✓</span> Personal garage</div>
+      </div>
+      <button class="btn" onclick="alert('Demo — checkout flow')">Buy Check →</button>
+    </div>
+
+    <div class="pricing-card popular">
+      <div class="popular-badge">Best Value</div>
+      <div class="plan-name">Vehical Annual</div>
+      <div class="plan-desc">Everything. Unlimited checks, reminders, costs.</div>
+      <div class="price">£4.99 <small>/year</small></div>
+      <div class="perks">
+        <div class="perk"><span class="check">✓</span> Unlimited reg checks</div>
+        <div class="perk"><span class="check">✓</span> 4 SMS MOT reminders per vehicle</div>
+        <div class="perk"><span class="check">✓</span> Tax due alerts</div>
+        <div class="perk"><span class="check">✓</span> 5-year ownership cost</div>
+        <div class="perk"><span class="check">✓</span> Personal garage (up to 3 vehicles)</div>
+        <div class="perk"><span class="check">✓</span> Depreciation projection</div>
+        <div class="perk"><span class="check">✓</span> Insurance group estimator</div>
+        <div class="perk"><span class="check">✓</span> Tap-to-book at partner garages</div>
+        <div class="perk"><span class="check">✓</span> Cancel anytime</div>
+      </div>
+      <button class="btn primary" onclick="alert('Demo — Stripe checkout: £4.99/yr')">Subscribe £4.99/yr →</button>
+    </div>
+
+    <div class="pricing-card">
+      <div class="plan-name">Garage Partner</div>
+      <div class="plan-desc">Get bookings. Pay only for results.</div>
+      <div class="price">£0</div>
+      <div style="margin:4px 0 12px;font-size:1.1rem;font-weight:600;color:var(--green)">+ £5 per booking</div>
+      <div class="perks">
+        <div class="perk"><span class="check">✓</span> Free to join</div>
+        <div class="perk"><span class="check">✓</span> Appear in driver booking flow</div>
+        <div class="perk"><span class="check">✓</span> Pay only when booked</div>
+        <div class="perk"><span class="check">✓</span> No monthly subscription</div>
+        <div class="perk"><span class="check">✓</span> Local area targeting</div>
+        <div class="perk"><span class="check">✓</span> Driver SMS includes your link</div>
+      </div>
+      <button class="btn" onclick="alert('Demo — garage onboarding flow')">Join Free →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Garage Section -->
+<div class="garage-section" id="garage">
+  <h2>🔧 For MOT Garages</h2>
+  <p>Get booked-up without spending a penny on ads. You only pay for completed bookings — £5 each.</p>
+  <div class="garage-stats">
+    <div class="garage-stat"><div class="num">£0</div><div class="lbl">Upfront cost</div></div>
+    <div class="garage-stat"><div class="num">£5</div><div class="lbl">Per booking</div></div>
+    <div class="garage-stat"><div class="num">2 min</div><div class="lbl">To join</div></div>
+  </div>
+  <p style="font-size:0.85rem;color:var(--text2)">
+    Your garage appears when a driver's MOT is due in your area. They tap the link in their reminder SMS, choose you, and book. You pay £5 only if they show up. No leads, no clicks, no monthly fees.
+  </p>
+  <div style="margin-top:20px">
+    <button class="cta-btn" style="background:linear-gradient(135deg,var(--green),#16a34a);padding:12px 32px;border:none;color:white;font-size:1rem;font-weight:600;border-radius:var(--radius-sm);cursor:pointer" onclick="alert('Demo — garage signup flow: name, postcode, phone, done')">⚡ Join as a Garage — Free</button>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Vehical</strong> · Built by Fast MOT, London Fields · Concept Demo
+</div>
+
+<script>
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const el = document.querySelector(a.getAttribute('href'));
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>
