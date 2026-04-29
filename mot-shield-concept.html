@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOT Shield — Never miss your MOT</title>
+<style>
+  :root {
+    --bg: #0b0f17;
+    --surface: #131a24;
+    --surface2: #1b2533;
+    --border: #253040;
+    --text: #e2e8f0;
+    --text2: #8899b0;
+    --accent: #3b82f6;
+    --accent2: #2563eb;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 60px 20px 30px;
+    background: linear-gradient(180deg, #0f1a2e, var(--bg));
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p { color: var(--text2); font-size: 1.05rem; margin-top: 6px; }
+  .hero .badge {
+    display: inline-block; margin-top: 10px;
+    background: var(--surface); border: 1px solid var(--amber);
+    color: var(--amber); padding: 4px 14px; border-radius: 20px;
+    font-size: 0.78rem;
+  }
+
+  /* ─── Tabs ─── */
+  .tabs {
+    display: flex; justify-content: center; gap: 4px;
+    max-width: 440px; margin: 0 auto 16px; padding: 0 20px;
+  }
+  .tab {
+    flex: 1; padding: 10px; text-align: center;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    cursor: pointer; font-size: 0.88rem; font-weight: 600;
+    color: var(--text2); background: rgba(255,255,255,0.03);
+    border: 1px solid transparent; border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: var(--accent); background: var(--surface);
+    border-color: var(--border) var(--border) var(--surface);
+    border-bottom-color: var(--accent);
+  }
+  .tab:hover { color: var(--text); }
+
+  /* ─── Steps ─── */
+  .steps {
+    display: flex; justify-content: center; gap: 8px;
+    padding: 0 20px 20px; max-width: 500px; margin: 0 auto;
+  }
+  .step {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; color: var(--text2); opacity: 0.4;
+  }
+  .step.active { opacity: 1; color: var(--accent); }
+  .step.done { opacity: 0.6; color: var(--green); }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700;
+  }
+  .step.active .step-num { background: var(--accent); border-color: var(--accent); color: white; }
+  .step.done .step-num { background: var(--green); border-color: var(--green); color: white; }
+  .step-arrow { color: var(--border); font-size: 0.9rem; }
+
+  .card {
+    max-width: 440px; margin: 0 auto; padding: 0 20px;
+  }
+  .card-inner {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    animation: fadeUp 0.3s ease;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .card-title {
+    font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-sub { color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; }
+
+  .input-group { margin-bottom: 16px; }
+  .input-label {
+    font-size: 0.78rem; color: var(--text2); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .input-field {
+    width: 100%; background: var(--surface2); border: 2px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    font-size: 1.1rem; color: var(--text); outline: none;
+    transition: border-color 0.2s; font-family: inherit;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: var(--text2); opacity: 0.5; }
+  .input-field.mono { font-family: 'Courier New', monospace; letter-spacing: 2px; text-transform: uppercase; }
+
+  .btn {
+    width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm);
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+    color: white; transition: opacity 0.2s;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  }
+  .btn-success {
+    background: linear-gradient(135deg, var(--green), #16a34a);
+  }
+  .btn-outline {
+    background: transparent; border: 2px solid var(--accent); color: var(--accent);
+  }
+  .btn-sm { padding: 10px 16px; width: auto; font-size: 0.85rem; }
+
+  .vehicle-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px;
+  }
+  .vehicle-reg {
+    font-family: 'Courier New', monospace; font-size: 1.4rem;
+    font-weight: 700; letter-spacing: 3px;
+  }
+  .vehicle-details {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;
+  }
+  .vehicle-detail .vd-label { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; }
+  .vehicle-detail .vd-value { font-size: 0.9rem; font-weight: 600; }
+
+  .pricing-card {
+    background: var(--surface2); border: 2px solid var(--accent);
+    border-radius: var(--radius-sm); padding: 20px; margin-bottom: 20px;
+    text-align: center;
+  }
+  .pricing-card .price { font-size: 2.5rem; font-weight: 800; color: var(--accent); }
+  .pricing-card .price small { font-size: 1rem; font-weight: 400; color: var(--text2); }
+  .pricing-card .perks { text-align: left; margin-top: 14px; }
+  .pricing-card .perk { padding: 6px 0; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; }
+  .pricing-card .perk .check { color: var(--green); }
+
+  .card-preview {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border-radius: var(--radius-sm); padding: 20px; margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+  }
+  .card-preview .number { font-size: 1.2rem; letter-spacing: 3px; margin-bottom: 12px; }
+  .card-preview .bottom { display: flex; justify-content: space-between; font-size: 0.85rem; }
+  .card-row { display: flex; gap: 12px; }
+  .card-row .input-group { flex: 1; }
+
+  /* ─── Success ─── */
+  .success-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(34,197,94,0.15); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto 16px;
+  }
+  .success-msg { text-align: center; }
+  .success-msg h2 { font-size: 1.3rem; margin-bottom: 4px; }
+  .success-msg p { color: var(--text2); font-size: 0.9rem; }
+  .reminder-timeline { margin-top: 20px; }
+  .rt-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .rt-item:last-child { border-bottom: none; }
+  .rt-icon { font-size: 1.2rem; width: 28px; text-align: center; }
+  .rt-info { flex: 1; }
+  .rt-info .rt-when { font-weight: 600; font-size: 0.9rem; }
+  .rt-info .rt-what { color: var(--text2); font-size: 0.8rem; }
+  .rt-link { color: var(--accent); font-weight: 600; font-size: 0.8rem; }
+
+  /* ─── Garage Section ─── */
+  .garage-section {
+    max-width: 440px; margin: 0 auto; padding: 0 20px;
+  }
+  .garage-section.hidden { display: none; }
+  .garage-hero {
+    text-align: center; padding: 20px 0;
+  }
+  .garage-hero h2 { font-size: 1.3rem; margin-bottom: 4px; }
+  .garage-hero p { color: var(--text2); font-size: 0.88rem; }
+  .garage-benefits {
+    display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
+  }
+  .garage-benefit {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .garage-benefit .icon { font-size: 1.5rem; width: 36px; text-align: center; }
+  .garage-benefit .gb-info { flex: 1; }
+  .garage-benefit .gb-title { font-weight: 700; font-size: 0.9rem; }
+  .garage-benefit .gb-desc { color: var(--text2); font-size: 0.8rem; margin-top: 1px; }
+  .garage-cta {
+    text-align: center; font-size: 2rem; font-weight: 800;
+    color: var(--green); margin: 16px 0;
+  }
+  .garage-cta small { font-weight: 400; font-size: 1rem; color: var(--text2); }
+
+  /* ─── Hidden ─── */
+  .hidden { display: none; }
+
+  .footer {
+    text-align: center; padding: 30px; color: var(--text2); font-size: 0.78rem;
+  }
+
+  @media (max-width: 480px) {
+    .steps { font-size: 0.7rem; gap: 4px; }
+    .step { gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🛡️ MOT Shield</h1>
+  <p>Never miss your MOT. SMS reminders + instant booking.</p>
+  <div class="badge">⚡ Concept Demo · All data is mock</div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" id="tabDriver" onclick="switchTab('driver')">🚗 For Drivers</div>
+  <div class="tab" id="tabGarage" onclick="switchTab('garage')">🔧 For Garages</div>
+</div>
+
+<!-- ====== DRIVER TAB ====== -->
+<div id="driverContent">
+
+<!-- Steps -->
+<div class="steps" id="stepsBar">
+  <div class="step active" id="s1"><span class="step-num">1</span> Phone</div>
+  <span class="step-arrow">→</span>
+  <div class="step" id="s2"><span class="step-num">2</span> Vehicle</div>
+  <span class="step-arrow">→</span>
+  <div class="step" id="s3"><span class="step-num">3</span> Confirm</div>
+  <span class="step-arrow">→</span>
+  <div class="step" id="s4"><span class="step-num">4</span> Pay</div>
+  <span class="step-arrow">→</span>
+  <div class="step" id="s5"><span class="step-num">5</span> Done</div>
+</div>
+
+<div class="card" id="cardContainer">
+
+  <!-- Step 1: Phone -->
+  <div class="card-inner" id="step1">
+    <div class="card-title">📱 Your Phone Number</div>
+    <div class="card-sub">We'll send your MOT reminders by SMS. The service costs £1.99/year — less than a coffee.</div>
+    <div class="input-group">
+      <div class="input-label">📞 Mobile Number</div>
+      <input class="input-field" type="tel" id="phoneInput" placeholder="07123 456789" maxlength="11">
+    </div>
+    <button class="btn" onclick="goStep2()">Get Started →</button>
+    <p style="text-align:center;color:var(--text2);font-size:0.78rem;margin-top:12px">
+      You'll receive 4 reminders per year. Cancel anytime. £1.99/yr rolling subscription.
+    </p>
+  </div>
+
+  <!-- Step 2: Vehicle Reg -->
+  <div class="card-inner hidden" id="step2">
+    <div class="card-title">🚗 Your Vehicle</div>
+    <div class="card-sub">Enter your reg and we'll look up your MOT details from DVLA records.</div>
+    <div class="input-group">
+      <div class="input-label">🔤 Registration Number</div>
+      <input class="input-field mono" type="text" id="vrmInput" placeholder="AB12 CDE" maxlength="8">
+    </div>
+    <button class="btn" onclick="goStep3()">Look up vehicle →</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="backTo(1)">← Back</button>
+  </div>
+
+  <!-- Step 3: Confirm -->
+  <div class="card-inner hidden" id="step3">
+    <div class="card-title">✅ Confirm Your Details</div>
+    <div class="card-sub">Is this your vehicle? Found via DVLA.</div>
+    <div class="vehicle-card" id="vehicleCard">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="vehicle-reg" id="vrmDisplay">AB12 CDE</div>
+        <div style="font-size:0.85rem;color:var(--green)">✅ DVLA match</div>
+      </div>
+      <div class="vehicle-details">
+        <div class="vehicle-detail"><div class="vd-label">Make</div><div class="vd-value" id="vMake">Volkswagen</div></div>
+        <div class="vehicle-detail"><div class="vd-label">Model</div><div class="vd-value" id="vModel">Golf</div></div>
+        <div class="vehicle-detail"><div class="vd-label">Year</div><div class="vd-value" id="vYear">2019</div></div>
+        <div class="vehicle-detail"><div class="vd-label">Colour</div><div class="vd-value" id="vColour">Black</div></div>
+        <div class="vehicle-detail"><div class="vd-label">MOT Expires</div><div class="vd-value" id="vMOT">12 May 2026</div></div>
+        <div class="vehicle-detail"><div class="vd-label">Reminders to</div><div class="vd-value" id="vPhone">07123 456789</div></div>
+      </div>
+    </div>
+    <button class="btn" onclick="goStep4()">Looks correct →</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="backTo(2)">← Edit vehicle</button>
+  </div>
+
+  <!-- Step 4: Pay -->
+  <div class="card-inner hidden" id="step4">
+    <div class="card-title">💳 Subscribe — £1.99/year</div>
+    <div class="card-sub">Rolling subscription. Cancel anytime. That's about 0.5p per day.</div>
+
+    <div class="pricing-card">
+      <div class="price">£1.99 <small>/year</small></div>
+      <div class="perks">
+        <div class="perk"><span class="check">✓</span> 4 SMS reminders: 30, 14, 7, 1 day before</div>
+        <div class="perk"><span class="check">✓</span> Tap to book at local MOT garages</div>
+        <div class="perk"><span class="check">✓</span> Cancel anytime — no questions</div>
+        <div class="perk"><span class="check">✓</span> Multi-vehicle (add family cars)</div>
+        <div class="perk"><span class="check">✓</span> Tax due alerts included</div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-label">Card Number</div>
+      <input class="input-field" placeholder="4242 4242 4242 4242" style="font-family:'Courier New',monospace;letter-spacing:2px">
+    </div>
+    <div class="card-row">
+      <div class="input-group"><div class="input-label">Expiry</div><input class="input-field" placeholder="MM/YY"></div>
+      <div class="input-group"><div class="input-label">CVC</div><input class="input-field" placeholder="•••" maxlength="4"></div>
+    </div>
+    <button class="btn" onclick="goStep5()">🔒 Pay £1.99 — Start MOT Shield</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="backTo(3)">← Back</button>
+    <p style="text-align:center;color:var(--text2);font-size:0.72rem;margin-top:10px">Secure payment via Stripe · Cancel anytime · No hidden fees</p>
+  </div>
+
+  <!-- Step 5: Done -->
+  <div class="card-inner hidden" id="step5">
+    <div class="success-icon">✅</div>
+    <div class="success-msg">
+      <h2>You're covered!</h2>
+      <p>Your MOT reminders will arrive at <span id="finalPhone" style="font-weight:600">07123 456789</span></p>
+    </div>
+    <div class="reminder-timeline">
+      <div class="rt-item">
+        <div class="rt-icon">📱</div>
+        <div class="rt-info">
+          <div class="rt-when">30 days before</div>
+          <div class="rt-what">"Your MOT expires 12 May. Book your test now at a local garage →"</div>
+        </div>
+        <div style="font-size:0.82rem" id="rt1">🗓️ 12 Apr</div>
+      </div>
+      <div class="rt-item">
+        <div class="rt-icon">📱</div>
+        <div class="rt-info">
+          <div class="rt-when">14 days before</div>
+          <div class="rt-what">"2 weeks until your MOT runs out. Check local availability →"</div>
+        </div>
+        <div style="font-size:0.82rem" id="rt2">🗓️ 28 Apr</div>
+      </div>
+      <div class="rt-item">
+        <div class="rt-icon">📱</div>
+        <div class="rt-info">
+          <div class="rt-when">7 days before</div>
+          <div class="rt-what">"One week to go! Book your MOT at Fast MOT, London Fields →"</div>
+          <div class="rt-link">🔗 fastmot.co.uk/book/AB12CDE</div>
+        </div>
+        <div style="font-size:0.82rem;color:var(--green)" id="rt3">🗓️ 5 May</div>
+      </div>
+      <div class="rt-item">
+        <div class="rt-icon">⚠️</div>
+        <div class="rt-info">
+          <div class="rt-when">1 day before</div>
+          <div class="rt-what">"⛔ Your MOT expires TOMORROW! Don't drive without it. Book now →"</div>
+        </div>
+        <div style="font-size:0.82rem" id="rt4">🗓️ 11 May</div>
+      </div>
+    </div>
+    <button class="btn btn-success" style="margin-top:16px" onclick="resetAll()">🔄 Try again</button>
+  </div>
+
+</div>
+</div><!-- end driverContent -->
+
+<!-- ====== GARAGE TAB ====== -->
+<div class="garage-section hidden" id="garageContent">
+
+  <div class="card" style="padding:0">
+    <div class="card-inner">
+      <div class="garage-hero">
+        <h2>🔧 For MOT Garages</h2>
+        <p>Get booked-up without spending a penny on marketing. You only pay for results.</p>
+      </div>
+
+      <div class="garage-benefits">
+        <div class="garage-benefit">
+          <div class="icon">📱</div>
+          <div class="gb-info">
+            <div class="gb-title">10,000+ drivers see your garage</div>
+            <div class="gb-desc">Your garage appears in the booking flow when a driver's MOT is due in your area.</div>
+          </div>
+        </div>
+        <div class="garage-benefit">
+          <div class="icon">£0</div>
+          <div class="gb-info">
+            <div class="gb-title">Zero upfront cost</div>
+            <div class="gb-desc">No setup fees. No monthly subscription. No minimum commitment.</div>
+          </div>
+        </div>
+        <div class="garage-benefit">
+          <div class="icon">🤝</div>
+          <div class="gb-info">
+            <div class="gb-title">Commission only — £5 per booking</div>
+            <div class="gb-desc">We only take £5 when a driver books and shows up. If no booking, you pay nothing.</div>
+          </div>
+        </div>
+        <div class="garage-benefit">
+          <div class="icon">⚡</div>
+          <div class="gb-info">
+            <div class="gb-title">Onboard in 2 minutes</div>
+            <div class="gb-desc">Enter your garage name, postcode, and phone. We handle the rest. Instant activation.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="garage-cta">
+        £5 <small>per completed booking</small>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <div class="input-group">
+          <div class="input-label">Garage Name</div>
+          <input class="input-field" placeholder="e.g. Fast MOT" id="garageName">
+        </div>
+        <div class="input-group">
+          <div class="input-label">Postcode</div>
+          <input class="input-field" placeholder="e.g. E8 3PL" id="garagePostcode" maxlength="8">
+        </div>
+        <div class="input-group">
+          <div class="input-label">Phone Number</div>
+          <input class="input-field" placeholder="020 7993 7111" id="garagePhone">
+        </div>
+      </div>
+
+      <button class="btn btn-success" onclick="joinGarage()">🚀 Join MOT Shield — £0 to start</button>
+      <p style="text-align:center;color:var(--text2);font-size:0.78rem;margin-top:10px">No contract. Cancel anytime. You only pay £5 when a booking is completed.</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  MOT Shield Concept &copy; 2026 · Built by Fast MOT, London Fields
+</div>
+
+<script>
+const MAKES = ['Audi','BMW','Ford','Mercedes-Benz','Nissan','Toyota','Volkswagen','Vauxhall','Peugeot','Renault','Hyundai','Kia','Honda','Mazda','MINI','Jaguar','Land Rover'];
+const MODELS = {
+  'Audi':['A3','A4','Q5'], 'BMW':['3 Series','X3','X1'], 'Ford':['Focus','Fiesta','Kuga','Puma'],
+  'Mercedes-Benz':['A-Class','C-Class','GLC'], 'Nissan':['Qashqai','Juke','Leaf'],
+  'Toyota':['Yaris','Corolla','RAV4'], 'Volkswagen':['Golf','Polo','Tiguan','ID.4'],
+  'Vauxhall':['Corsa','Astra','Mokka'], 'Peugeot':['208','308','3008'],
+  'Renault':['Clio','Captur','Zoe'], 'Hyundai':['i10','Tucson','Kona'],
+  'Kia':['Sportage','Niro','EV6'], 'Honda':['Civic','CR-V','HR-V'],
+  'Mazda':['Mazda3','CX-5','MX-5'], 'MINI':['Cooper','Countryman'],
+  'Jaguar':['F-PACE','E-PACE','I-PACE'], 'Land Rover':['Discovery','Evoque','Defender']
+};
+const COLOURS = ['Black','White','Grey','Blue','Red','Silver','Green'];
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+let state = { phone: '', vrm: '', vehicle: null };
+
+function switchTab(tab) {
+  document.getElementById('tabDriver').classList.toggle('active', tab === 'driver');
+  document.getElementById('tabGarage').classList.toggle('active', tab === 'garage');
+  document.getElementById('driverContent').classList.toggle('hidden', tab !== 'driver');
+  document.getElementById('garageContent').classList.toggle('hidden', tab !== 'garage');
+}
+
+function showStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('step' + i).classList.add('hidden');
+    document.getElementById('s' + i).classList.remove('active', 'done');
+  }
+  document.getElementById('step' + n).classList.remove('hidden');
+  for (let i = 1; i < n; i++) document.getElementById('s' + i).classList.add('done');
+  document.getElementById('s' + n).classList.add('active');
+  document.getElementById('cardContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function backTo(n) { showStep(n); }
+
+function goStep2() {
+  const phone = document.getElementById('phoneInput').value.replace(/\s/g, '');
+  if (phone.length < 10) { alert('Please enter a valid UK mobile number'); return; }
+  state.phone = phone;
+  document.getElementById('vPhone').textContent = phone;
+  showStep(2);
+}
+
+function goStep3() {
+  const vrm = document.getElementById('vrmInput').value.replace(/\s/g, '').toUpperCase();
+  if (vrm.length < 2) { alert('Please enter a vehicle registration number'); return; }
+  state.vrm = vrm;
+
+  const make = pick(MAKES);
+  const model = pick(MODELS[make] || ['Unknown']);
+  const year = pick([2017,2018,2019,2020,2021,2022,2023,2024]);
+  const colour = pick(COLOURS);
+  const expMonth = pick([1,2,3,4,5,6,7,8,9,10,11,12]);
+  const expDay = pick([1,15,28]);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const motExpiry = `${expDay} ${months[expMonth-1]} ${year + 1}`;
+  state.vehicle = { make, model, year, colour, motExpiry };
+
+  document.getElementById('vrmDisplay').textContent = vrm;
+  document.getElementById('vMake').textContent = make;
+  document.getElementById('vModel').textContent = model;
+  document.getElementById('vYear').textContent = year;
+  document.getElementById('vColour').textContent = colour;
+  document.getElementById('vMOT').textContent = motExpiry;
+  showStep(3);
+}
+
+function goStep4() {
+  showStep(4);
+}
+
+function goStep5() {
+  document.getElementById('finalPhone').textContent = state.phone;
+
+  const expParts = state.vehicle.motExpiry.split(' ');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const expDate = new Date(parseInt(expParts[2]), months.indexOf(expParts[1]), parseInt(expParts[0]));
+
+  const fmtDate = (d) => `${d.getDate()} ${months[d.getMonth()]}`;
+  const d30 = new Date(expDate); d30.setDate(d30.getDate() - 30);
+  const d14 = new Date(expDate); d14.setDate(d14.getDate() - 14);
+  const d7 = new Date(expDate); d7.setDate(d7.getDate() - 7);
+  const d1 = new Date(expDate); d1.setDate(d1.getDate() - 1);
+
+  document.getElementById('rt1').textContent = '🗓️ ' + fmtDate(d30);
+  document.getElementById('rt2').textContent = '🗓️ ' + fmtDate(d14);
+  document.getElementById('rt3').textContent = '🗓️ ' + fmtDate(d7);
+  document.getElementById('rt4').textContent = '🗓️ ' + fmtDate(d1);
+  showStep(5);
+}
+
+function resetAll() {
+  state = { phone: '', vrm: '', vehicle: null };
+  document.getElementById('phoneInput').value = '';
+  document.getElementById('vrmInput').value = '';
+  showStep(1);
+}
+
+function joinGarage() {
+  const name = document.getElementById('garageName').value;
+  const postcode = document.getElementById('garagePostcode').value;
+  if (!name || !postcode) { alert('Please enter your garage name and postcode'); return; }
+  alert(`✅ ${name} is now a MOT Shield partner!\n\nNo upfront cost. You'll only pay £5 per completed booking.\nWe'll notify you when drivers in ${postcode} area need an MOT.`);
+}
+</script>
+</body>
+</html>
